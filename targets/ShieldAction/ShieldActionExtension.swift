@@ -15,7 +15,7 @@ class ShieldActionExtension: ShieldActionDelegate {
   // can localize without forking. Defaults preserve the original English
   // copy and the icon attachment.
   private let notificationTitle = "RotBlocker"
-  private let notificationBody = "Open RotBlocker for filtered Instagram — Reels cut out."
+  private let notificationBody = "Open RotBlocker to browse with Reels and Shorts cut out."
   private let notificationAttachIcon = true
 
   override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {

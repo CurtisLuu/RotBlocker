@@ -3,26 +3,53 @@ import {
   DEFAULT_INSTAGRAM_FILTERS,
   type InstagramFilterOptions,
 } from "../filters/instagram";
+import {
+  DEFAULT_YOUTUBE_FILTERS,
+  type YouTubeFilterOptions,
+} from "../filters/youtube";
 
-const FILTERS_KEY = "rotblocker.instagram.filters";
+const INSTAGRAM_FILTERS_KEY = "rotblocker.instagram.filters";
+const YOUTUBE_FILTERS_KEY = "rotblocker.youtube.filters";
 const TUTORIAL_KEY = "rotblocker.tutorial.completed";
 const SELECTION_KEY = "rotblocker.native.selection";
 const BLOCK_ACTIVE_KEY = "rotblocker.native.blockActive";
 
-export async function loadInstagramFilters(): Promise<InstagramFilterOptions> {
+/**
+ * Filters are stored per site, and read back merged over the defaults: a
+ * release that adds a toggle picks up its default for anyone whose stored
+ * object predates it, rather than arriving as `undefined`.
+ */
+async function loadFilters<T extends object>(
+  key: string,
+  defaults: T
+): Promise<T> {
   try {
-    const raw = await AsyncStorage.getItem(FILTERS_KEY);
-    if (!raw) return DEFAULT_INSTAGRAM_FILTERS;
-    return { ...DEFAULT_INSTAGRAM_FILTERS, ...JSON.parse(raw) };
+    const raw = await AsyncStorage.getItem(key);
+    if (!raw) return defaults;
+    return { ...defaults, ...JSON.parse(raw) };
   } catch {
-    return DEFAULT_INSTAGRAM_FILTERS;
+    return defaults;
   }
+}
+
+export async function loadInstagramFilters(): Promise<InstagramFilterOptions> {
+  return loadFilters(INSTAGRAM_FILTERS_KEY, DEFAULT_INSTAGRAM_FILTERS);
 }
 
 export async function saveInstagramFilters(
   options: InstagramFilterOptions
 ): Promise<void> {
-  await AsyncStorage.setItem(FILTERS_KEY, JSON.stringify(options));
+  await AsyncStorage.setItem(INSTAGRAM_FILTERS_KEY, JSON.stringify(options));
+}
+
+export async function loadYouTubeFilters(): Promise<YouTubeFilterOptions> {
+  return loadFilters(YOUTUBE_FILTERS_KEY, DEFAULT_YOUTUBE_FILTERS);
+}
+
+export async function saveYouTubeFilters(
+  options: YouTubeFilterOptions
+): Promise<void> {
+  await AsyncStorage.setItem(YOUTUBE_FILTERS_KEY, JSON.stringify(options));
 }
 
 export async function hasCompletedTutorial(): Promise<boolean> {

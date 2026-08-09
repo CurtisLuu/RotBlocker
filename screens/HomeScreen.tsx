@@ -14,20 +14,14 @@ import {
   type IconName,
 } from "../components/Kit";
 import {
-  DEFAULT_INSTAGRAM_FILTERS,
-  type InstagramFilterOptions,
-} from "../filters/instagram";
-import { loadInstagramFilters, saveInstagramFilters } from "../lib/settings";
+  INSTAGRAM_SITE,
+  YOUTUBE_SITE,
+  type FilteredSite,
+  type SiteKey,
+} from "../lib/sites";
+import type { InstagramFilterOptions } from "../filters/instagram";
+import type { YouTubeFilterOptions } from "../filters/youtube";
 import { colors, fonts, GUTTER } from "../theme";
-
-type ToggleKey = keyof InstagramFilterOptions;
-
-const TOGGLES: { key: ToggleKey; label: string; icon: IconName }[] = [
-  { key: "hideReelsTab", label: "Reels tab", icon: "albums-outline" },
-  { key: "hideReelsInFeed", label: "Reels in your feed", icon: "film-outline" },
-  { key: "blockReelsNavigation", label: "Links to Reels", icon: "link-outline" },
-  { key: "hideExplore", label: "Explore tab", icon: "compass-outline" },
-];
 
 /** Three steps, as a strip of icons rather than three paragraphs. */
 const STEPS: { icon: IconName; label: string }[] = [
@@ -37,41 +31,100 @@ const STEPS: { icon: IconName; label: string }[] = [
 ];
 
 type Props = {
-  onOpenInstagram: () => void;
+  onOpenSite: (site: SiteKey) => void;
   onOpenTutorial: () => void;
   onOpenSetup: () => void;
   onOpenNativeBlock: () => void;
 };
 
+/** One site's toggles. Mint means the thing is currently hidden. */
+function FilterPanel<T extends Record<string, boolean>>({
+  site,
+  filters,
+  ready,
+  onToggle,
+}: {
+  site: FilteredSite<T>;
+  filters: T;
+  ready: boolean;
+  onToggle: (key: keyof T & string, value: boolean) => void;
+}) {
+  return (
+    <Panel style={styles.filterPanel}>
+      {site.toggles.map((item, i) => (
+        <View key={item.key} style={[styles.row, i > 0 && styles.rowDivided]}>
+          <Ionicons
+            name={item.icon}
+            size={19}
+            color={filters[item.key] ? colors.mint : colors.textFaint}
+          />
+          <Text style={styles.rowLabel}>{item.label}</Text>
+          <Switch
+            disabled={!ready}
+            value={filters[item.key]}
+            onValueChange={(value) => onToggle(item.key, value)}
+            trackColor={{ false: colors.lineStrong, true: colors.mint }}
+            thumbColor={filters[item.key] ? colors.base : colors.text}
+            ios_backgroundColor={colors.lineStrong}
+          />
+        </View>
+      ))}
+    </Panel>
+  );
+}
+
 export function HomeScreen({
-  onOpenInstagram,
+  onOpenSite,
   onOpenTutorial,
   onOpenSetup,
   onOpenNativeBlock,
 }: Props) {
-  const [filters, setFilters] = useState<InstagramFilterOptions>(
-    DEFAULT_INSTAGRAM_FILTERS
+  const [instagram, setInstagram] = useState<InstagramFilterOptions>(
+    INSTAGRAM_SITE.defaults
+  );
+  const [youtube, setYoutube] = useState<YouTubeFilterOptions>(
+    YOUTUBE_SITE.defaults
   );
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadInstagramFilters().then((value) => {
-      setFilters(value);
-      setReady(true);
-    });
+    Promise.all([INSTAGRAM_SITE.load(), YOUTUBE_SITE.load()]).then(
+      ([ig, yt]) => {
+        setInstagram(ig);
+        setYoutube(yt);
+        setReady(true);
+      }
+    );
   }, []);
 
-  const update = useCallback(async (key: ToggleKey, value: boolean) => {
-    setFilters((prev) => {
-      const next = { ...prev, [key]: value };
-      void saveInstagramFilters(next);
-      return next;
-    });
-  }, []);
+  const updateInstagram = useCallback(
+    (key: keyof InstagramFilterOptions & string, value: boolean) => {
+      setInstagram((prev) => {
+        const next = { ...prev, [key]: value };
+        void INSTAGRAM_SITE.save(next);
+        return next;
+      });
+    },
+    []
+  );
 
+  const updateYoutube = useCallback(
+    (key: keyof YouTubeFilterOptions & string, value: boolean) => {
+      setYoutube((prev) => {
+        const next = { ...prev, [key]: value };
+        void YOUTUBE_SITE.save(next);
+        return next;
+      });
+    },
+    []
+  );
+
+  const total = INSTAGRAM_SITE.toggles.length + YOUTUBE_SITE.toggles.length;
   const hiddenCount = useMemo(
-    () => TOGGLES.filter((item) => filters[item.key]).length,
-    [filters]
+    () =>
+      INSTAGRAM_SITE.toggles.filter((item) => instagram[item.key]).length +
+      YOUTUBE_SITE.toggles.filter((item) => youtube[item.key]).length,
+    [instagram, youtube]
   );
 
   return (
@@ -87,14 +140,24 @@ export function HomeScreen({
               <Text style={styles.thesisLead}>Instagram without </Text>
               <StruckReels size="sm" style={styles.inlineMark} />
             </View>
+            <View style={styles.thesisRow}>
+              <Text style={styles.thesisLead}>YouTube without </Text>
+              <StruckReels size="sm" word="SHORTS" style={styles.inlineMark} />
+            </View>
           </Reveal>
 
           <Reveal delay={70}>
             <Button
               label="Open Instagram"
               tone="primary"
-              onPress={onOpenInstagram}
+              onPress={() => onOpenSite("instagram")}
               style={styles.heroCta}
+            />
+            <Button
+              label="Open YouTube"
+              tone="secondary"
+              onPress={() => onOpenSite("youtube")}
+              style={styles.secondCta}
             />
             <View style={styles.ctaMetaRow}>
               <Ionicons
@@ -104,7 +167,7 @@ export function HomeScreen({
               />
               <Text style={styles.ctaMeta}>
                 {ready
-                  ? `${hiddenCount} of ${TOGGLES.length} things hidden`
+                  ? `${hiddenCount} of ${total} things hidden`
                   : "Loading your settings"}
               </Text>
             </View>
@@ -127,40 +190,54 @@ export function HomeScreen({
           <Reveal delay={170} style={styles.block}>
             <NavRow
               icon="shield-checkmark-outline"
-              label="Block the Instagram app"
-              hint="Stops it opening on your phone"
+              label="Block apps on your phone"
+              hint="Instagram, TikTok, YouTube, or anything else"
               onPress={onOpenNativeBlock}
             />
           </Reveal>
 
           <Reveal delay={220} style={styles.block}>
-            <Eyebrow>Hidden in your feed</Eyebrow>
-            <Panel style={styles.filterPanel}>
-              {TOGGLES.map((item, i) => (
-                <View
-                  key={item.key}
-                  style={[styles.row, i > 0 && styles.rowDivided]}
-                >
-                  <Ionicons
-                    name={item.icon}
-                    size={19}
-                    color={filters[item.key] ? colors.mint : colors.textFaint}
-                  />
-                  <Text style={styles.rowLabel}>{item.label}</Text>
-                  <Switch
-                    disabled={!ready}
-                    value={filters[item.key]}
-                    onValueChange={(value) => update(item.key, value)}
-                    trackColor={{ false: colors.lineStrong, true: colors.mint }}
-                    thumbColor={filters[item.key] ? colors.base : colors.text}
-                    ios_backgroundColor={colors.lineStrong}
-                  />
-                </View>
-              ))}
-            </Panel>
+            <Eyebrow>Hidden on Instagram</Eyebrow>
+            <FilterPanel
+              site={INSTAGRAM_SITE}
+              filters={instagram}
+              ready={ready}
+              onToggle={updateInstagram}
+            />
           </Reveal>
 
-          <Reveal delay={260} style={styles.block}>
+          <Reveal delay={250} style={styles.block}>
+            <Eyebrow>Hidden on YouTube</Eyebrow>
+            <FilterPanel
+              site={YOUTUBE_SITE}
+              filters={youtube}
+              ready={ready}
+              onToggle={updateYoutube}
+            />
+            <Text style={styles.panelNote}>
+              Everything else on YouTube works as usual. A link to a Short
+              opens as a normal video, without the swipe feed.
+            </Text>
+          </Reveal>
+
+          <Reveal delay={280} style={styles.block}>
+            <Eyebrow tone="splice">TikTok</Eyebrow>
+            <Panel tone="notice">
+              <Text style={styles.panelBody}>
+                TikTok is short video the whole way through, so there is no
+                filtered version of it to browse. RotBlocker blocks it instead.
+              </Text>
+            </Panel>
+            <NavRow
+              icon="logo-tiktok"
+              label="Block TikTok"
+              hint="Same list as the other apps"
+              tone="splice"
+              onPress={onOpenNativeBlock}
+            />
+          </Reveal>
+
+          <Reveal delay={310} style={styles.block}>
             <NavRow
               icon="help-circle-outline"
               label="How it works"
@@ -214,6 +291,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   heroCta: { marginTop: 22 },
+  secondCta: { marginTop: 10 },
   ctaMetaRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -269,6 +347,18 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMed,
     color: colors.text,
     fontSize: 15,
+  },
+  panelNote: {
+    fontFamily: fonts.body,
+    color: colors.textFaint,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  panelBody: {
+    fontFamily: fonts.body,
+    color: colors.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
   },
   footer: {
     marginTop: 26,
