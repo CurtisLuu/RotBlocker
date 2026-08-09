@@ -17,11 +17,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { HomeScreen } from "./screens/HomeScreen";
-import { InstagramScreen } from "./screens/InstagramScreen";
+import { FilteredBrowserScreen } from "./screens/FilteredBrowserScreen";
 import { NativeBlockScreen } from "./screens/NativeBlockScreen";
 import { SetupGuideScreen } from "./screens/SetupGuideScreen";
 import { TutorialScreen } from "./screens/TutorialScreen";
 import { getNativeBlockModule } from "./lib/nativeBlock";
+import { INSTAGRAM_SITE, YOUTUBE_SITE, type SiteKey } from "./lib/sites";
 import {
   hasCompletedTutorial,
   markTutorialCompleted,
@@ -33,16 +34,18 @@ type Screen =
   | "tutorial"
   | "home"
   | "instagram"
+  | "youtube"
   | "setup"
   | "nativeBlock";
 
-function pathFromUrl(url: string | null): string | null {
+function pathFromUrl(url: string | null): Screen | null {
   if (!url) return null;
   try {
     const parsed = Linking.parse(url);
     const path = parsed.path ?? "";
     const host = parsed.hostname ?? "";
     if (path.includes("instagram") || host === "instagram") return "instagram";
+    if (path.includes("youtube") || host === "youtube") return "youtube";
     if (path.includes("blocked") || host === "blocked") return "instagram";
     if (path.includes("block") || host === "block") return "nativeBlock";
     return null;
@@ -76,8 +79,7 @@ export default function App() {
   useEffect(() => {
     const handle = (url: string | null) => {
       const target = pathFromUrl(url);
-      if (target === "instagram") setScreen("instagram");
-      if (target === "nativeBlock") setScreen("nativeBlock");
+      if (target) setScreen(target);
     };
 
     Linking.getInitialURL().then(handle);
@@ -91,7 +93,19 @@ export default function App() {
     if (!blocker?.addPendingUnlockListener) return;
 
     const sub = blocker.addPendingUnlockListener(() => {
-      setScreen("instagram");
+      // The unlock event says nothing about which app was shielded, but the
+      // intercept queue does. Open the filtered version of the app the user
+      // was actually reaching for; anything else (TikTok, an app RotBlocker
+      // doesn't browse) keeps the old Instagram destination.
+      let target: Screen = "instagram";
+      try {
+        const intercepts = blocker.drainPendingIntercepts?.() ?? [];
+        const latest = intercepts[intercepts.length - 1]?.appName ?? "";
+        if (latest.toLowerCase().includes("youtube")) target = "youtube";
+      } catch {
+        // Queue unavailable — fall through to the default.
+      }
+      setScreen(target);
     });
     return () => {
       // API may return subscription-like object
@@ -99,6 +113,9 @@ export default function App() {
       (sub as any)?.remove?.();
     };
   }, []);
+
+  /** Site keys double as screen names, so the browser routes by key. */
+  const openSite = (site: SiteKey) => setScreen(site);
 
   const finishTutorial = async () => {
     await markTutorialCompleted();
@@ -120,14 +137,23 @@ export default function App() {
       ) : null}
       {!booting && screen === "home" ? (
         <HomeScreen
-          onOpenInstagram={() => setScreen("instagram")}
+          onOpenSite={openSite}
           onOpenTutorial={() => setScreen("tutorial")}
           onOpenSetup={() => setScreen("setup")}
           onOpenNativeBlock={() => setScreen("nativeBlock")}
         />
       ) : null}
       {!booting && screen === "instagram" ? (
-        <InstagramScreen onBack={() => setScreen("home")} />
+        <FilteredBrowserScreen
+          site={INSTAGRAM_SITE}
+          onBack={() => setScreen("home")}
+        />
+      ) : null}
+      {!booting && screen === "youtube" ? (
+        <FilteredBrowserScreen
+          site={YOUTUBE_SITE}
+          onBack={() => setScreen("home")}
+        />
       ) : null}
       {!booting && screen === "setup" ? (
         <SetupGuideScreen
@@ -138,7 +164,7 @@ export default function App() {
       {!booting && screen === "nativeBlock" ? (
         <NativeBlockScreen
           onBack={() => setScreen("home")}
-          onOpenFilteredInstagram={() => setScreen("instagram")}
+          onOpenSite={openSite}
         />
       ) : null}
     </SafeAreaProvider>

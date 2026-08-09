@@ -11,30 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import WebView from "react-native-webview";
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 import { Button } from "../components/Kit";
-import {
-  buildInstagramFilterScript,
-  DEFAULT_INSTAGRAM_FILTERS,
-  type InstagramFilterOptions,
-} from "../filters/instagram";
-import { loadInstagramFilters } from "../lib/settings";
+import type { FilteredSite } from "../lib/sites";
 import { colors, fonts, radius } from "../theme";
 
-const INSTAGRAM_URL = "https://www.instagram.com/";
-
-function isReelsUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return (
-      parsed.hostname.includes("instagram.com") &&
-      (parsed.pathname.startsWith("/reels") ||
-        parsed.pathname.startsWith("/reel/"))
-    );
-  } catch {
-    return false;
-  }
-}
-
-type Props = {
+type Props<T extends Record<string, boolean>> = {
+  /** Which site to open, and what to hide on it. See `lib/sites.ts`. */
+  site: FilteredSite<T>;
   onBack: () => void;
 };
 
@@ -51,21 +33,28 @@ function Chip({ label, onPress }: { label: string; onPress: () => void }) {
   );
 }
 
-export function InstagramScreen({ onBack }: Props) {
+/**
+ * The in-app browser: one site's mobile web, with that site's filter script
+ * injected before the page loads and again on every load and settings change.
+ */
+export function FilteredBrowserScreen<T extends Record<string, boolean>>({
+  site,
+  onBack,
+}: Props<T>) {
   const webRef = useRef<WebView>(null);
-  const [filters, setFilters] = useState<InstagramFilterOptions>(
-    DEFAULT_INSTAGRAM_FILTERS
-  );
+  // Starts on the defaults so the script is ready to inject before the stored
+  // settings come back; the real ones land a tick later and re-inject.
+  const [filters, setFilters] = useState<T>(site.defaults);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadInstagramFilters().then(setFilters);
-  }, []);
+    site.load().then(setFilters);
+  }, [site]);
 
   const injected = useMemo(
-    () => buildInstagramFilterScript(filters),
-    [filters]
+    () => site.buildScript(filters),
+    [site, filters]
   );
 
   useEffect(() => {
@@ -75,15 +64,14 @@ export function InstagramScreen({ onBack }: Props) {
   const onShouldStart = useCallback(
     (request: ShouldStartLoadRequest) => {
       if (
-        filters.blockReelsNavigation &&
-        isReelsUrl(request.url) &&
-        request.navigationType === "click"
+        request.navigationType === "click" &&
+        site.blocksUrl(request.url, filters)
       ) {
         return false;
       }
       return true;
     },
-    [filters.blockReelsNavigation]
+    [site, filters]
   );
 
   return (
@@ -91,7 +79,7 @@ export function InstagramScreen({ onBack }: Props) {
       <View style={styles.toolbar}>
         <View style={styles.statusLine}>
           <Ionicons name="eye-off-outline" size={13} color={colors.mint} />
-          <Text style={styles.statusText}>Reels hidden</Text>
+          <Text style={styles.statusText}>{site.hiddenLabel}</Text>
         </View>
 
         <View style={styles.tools}>
@@ -117,7 +105,7 @@ export function InstagramScreen({ onBack }: Props) {
 
       {error ? (
         <View style={styles.center}>
-          <Text style={styles.errorLabel}>Couldn’t load Instagram</Text>
+          <Text style={styles.errorLabel}>Couldn’t load {site.name}</Text>
           <Text style={styles.error}>{error}</Text>
           <Button
             label="Retry"
@@ -134,7 +122,7 @@ export function InstagramScreen({ onBack }: Props) {
         <View style={styles.webWrap}>
           <WebView
             ref={webRef}
-            source={{ uri: INSTAGRAM_URL }}
+            source={{ uri: site.url }}
             style={styles.web}
             sharedCookiesEnabled
             thirdPartyCookiesEnabled
