@@ -18,11 +18,12 @@ if (enableNativeBlock) {
             "{appName} is shielded. Open RotBlocker for a filtered session.",
           primaryButtonLabel: "Open RotBlocker",
           secondaryButtonLabel: "Not now",
-          primaryButtonColor: "#1A5C4A",
-          titleColor: "#141816",
-          subtitleColor: "#3A413C",
-          backgroundColor: "#E4E7E0",
-          backgroundBlurStyle: "systemThickMaterialLight",
+          // Matches theme.ts — mint = go, off-white on film-leader black.
+          primaryButtonColor: "#4BE0A5",
+          titleColor: "#E9EFEA",
+          subtitleColor: "#98A49D",
+          backgroundColor: "#070907",
+          backgroundBlurStyle: "systemThickMaterialDark",
         },
         notification: {
           title: "RotBlocker",
@@ -41,12 +42,13 @@ const config = {
   orientation: "portrait",
   icon: "./assets/icon.png",
   scheme: "rotblocker",
-  userInterfaceStyle: "automatic",
+  // The bench is dark-only — let system chrome (alerts, pickers) follow.
+  userInterfaceStyle: "dark",
   newArchEnabled: true,
   splash: {
     image: "./assets/splash-icon.png",
     resizeMode: "contain",
-    backgroundColor: "#E4E7E0",
+    backgroundColor: "#070907",
   },
   ios: {
     supportsTablet: false,
@@ -73,7 +75,7 @@ const config = {
   android: {
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
-      backgroundColor: "#E4E7E0",
+      backgroundColor: "#070907",
     },
     package: "org.rotblocker.app",
     intentFilters: [

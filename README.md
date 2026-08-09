@@ -7,7 +7,7 @@ RotBlocker loads Instagram’s mobile site in an in-app browser and hides Reels 
 ## How it works
 
 1. Keep **native Instagram** installed for DM/story notifications.
-2. **Block native apps** in RotBlocker (Screen Time shield) — pick Instagram once.
+2. **Block the Instagram app** in RotBlocker (Screen Time) — pick Instagram once.
 3. Browse Instagram inside **RotBlocker**, where Reels are filtered.
 
 Apple does **not** allow apps to create Shortcuts automations for you. Native shielding replaces that redirect. Shortcuts remain an optional manual backup.
@@ -27,7 +27,7 @@ npm start
 
 Scan the QR with Expo Go. That tests filters, tutorial, setup UI, and home.
 
-**You cannot test native Instagram blocking inside Expo Go** — Screen Time APIs need a custom native binary. **Block native apps** will say that on purpose.
+**You cannot test native Instagram blocking inside Expo Go** — Screen Time APIs need a custom native binary. **Block the Instagram app** will say so on purpose.
 
 `expo-app-blocker` is disabled for normal `npm start` so it doesn’t break Expo. EAS builds turn it on automatically.
 
@@ -48,7 +48,7 @@ Needs a real iOS build (not Expo Go):
 npm run build:dev:ios
 ```
 
-Install on a **physical iPhone**, open **Block native apps**, allow Screen Time, pick Instagram.
+Install on a **physical iPhone**, open **Block the Instagram app**, allow Screen Time, pick Instagram.
 
 ## Project layout
 

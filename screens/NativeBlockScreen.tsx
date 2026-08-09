@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Linking,
   Platform,
@@ -11,7 +10,16 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { SpliceBackground } from "../components/SpliceBackground";
+import {
+  Button,
+  Eyebrow,
+  NavRow,
+  Panel,
+  Reveal,
+  ScreenHeader,
+} from "../components/Kit";
 import {
   getNativeBlockModule,
   isNativeBlockingAvailable,
@@ -22,12 +30,29 @@ import {
   saveBlockActive,
   saveNativeSelection,
 } from "../lib/settings";
-import { colors, fonts } from "../theme";
+import { colors, fonts, GUTTER, radius } from "../theme";
 
 type Props = {
   onBack: () => void;
   onOpenFilteredInstagram: () => void;
 };
+
+/** Plain-language status, with the icon carrying the on/off state. */
+function StatusRow({ label, value, ok }: { label: string; value: string; ok: boolean }) {
+  return (
+    <View style={styles.statusRow}>
+      <Ionicons
+        name={ok ? "checkmark-circle" : "ellipse-outline"}
+        size={19}
+        color={ok ? colors.mint : colors.textFaint}
+      />
+      <Text style={styles.statusLabel}>{label}</Text>
+      <Text style={[styles.statusValue, ok ? styles.ok : styles.warn]}>
+        {value}
+      </Text>
+    </View>
+  );
+}
 
 export function NativeBlockScreen({
   onBack,
@@ -111,98 +136,75 @@ export function NativeBlockScreen({
   return (
     <SpliceBackground>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
-          <Pressable
-            onPress={onBack}
-            style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
-          >
-            <Text style={styles.backText}>Home</Text>
-          </Pressable>
-          <Text style={styles.headerTitle}>Block native apps</Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader title="Block Instagram" onBack={onBack} />
 
         <ScrollView
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.lead}>
-            Shield Instagram (and anything else you pick) with Apple Screen
-            Time. When you open a shielded app, iOS shows RotBlocker’s block
-            screen — open filtered Instagram from here instead.
-          </Text>
+          <Reveal>
+            <Text style={styles.lead}>
+              Use Screen Time to stop Instagram from opening. When you try to
+              open it, you’ll see RotBlocker’s screen instead.
+            </Text>
+          </Reveal>
 
           {!available || !blocker ? (
-            <View style={styles.callout}>
-              <Text style={styles.calloutTitle}>Needs a real iOS build</Text>
-              <Text style={styles.calloutBody}>
-                Expo Go can’t use Screen Time APIs. Build a development client
-                with EAS (or Xcode on a Mac), install it on your iPhone, then
-                this screen becomes one-tap blocking.
-              </Text>
-              <Text style={styles.calloutBody}>
-                Apple also doesn’t let apps create Shortcuts automations for
-                you. Native shielding replaces that redirect — no Shortcuts
-                setup required once this works.
-              </Text>
-              <Text style={styles.codeHint}>
-                npx eas build --profile development --platform ios
-              </Text>
-            </View>
+            <Reveal delay={60}>
+              <Panel tone="notice">
+                <Eyebrow tone="splice">Not available in Expo Go</Eyebrow>
+                <Text style={styles.calloutBody}>
+                  Screen Time can only be used by a full build of the app. Build
+                  a development version and install it on your iPhone, and
+                  blocking becomes a single tap here.
+                </Text>
+                <View style={styles.code}>
+                  <Text style={styles.codeText}>
+                    npx eas build --profile development --platform ios
+                  </Text>
+                </View>
+              </Panel>
+            </Reveal>
           ) : (
-            <>
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Screen Time</Text>
-                <Text
-                  style={[
-                    styles.statusValue,
-                    authorized ? styles.ok : styles.warn,
-                  ]}
-                >
-                  {authorized ? "Authorized" : "Not authorized"}
-                </Text>
-              </View>
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Shields</Text>
-                <Text
-                  style={[
-                    styles.statusValue,
-                    blockActive ? styles.ok : styles.warn,
-                  ]}
-                >
-                  {blockActive
-                    ? `On${selectedCount ? ` · ${selectedCount} selected` : ""}`
-                    : "Off"}
-                </Text>
-              </View>
+            <Reveal delay={60} style={styles.stack}>
+              <Panel style={styles.statusPanel}>
+                <StatusRow
+                  label="Screen Time access"
+                  value={authorized ? "Allowed" : "Not allowed yet"}
+                  ok={authorized}
+                />
+                <View style={styles.statusDivider} />
+                <StatusRow
+                  label="Blocking"
+                  value={
+                    blockActive
+                      ? selectedCount
+                        ? `On · ${selectedCount} app${selectedCount === 1 ? "" : "s"}`
+                        : "On"
+                      : "Off"
+                  }
+                  ok={blockActive}
+                />
+              </Panel>
 
               {!authorized ? (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.primary,
-                    pressed && styles.pressed,
-                  ]}
+                <Button
+                  label="Allow Screen Time access"
+                  tone="primary"
                   onPress={requestAuth}
-                  disabled={busy}
-                >
-                  {busy ? (
-                    <ActivityIndicator color={colors.white} />
-                  ) : (
-                    <Text style={styles.primaryText}>
-                      Allow Screen Time access
-                    </Text>
-                  )}
-                </Pressable>
+                  busy={busy}
+                />
               ) : null}
 
               {authorized && Platform.OS === "ios" && Picker && ready ? (
                 <View style={styles.pickerWrap}>
-                  <Text style={styles.section}>
-                    Pick apps to shield (choose Instagram)
+                  <Eyebrow>Choose what to block</Eyebrow>
+                  <Text style={styles.pickerHint}>
+                    Select Instagram. Blocking starts as soon as you choose.
                   </Text>
                   <Picker
                     initialSelection={selectionData || undefined}
-                    theme="light"
+                    theme="dark"
                     style={styles.picker}
                     onSelectionChange={async (event) => {
                       setSelectionData(event.selectionData);
@@ -233,78 +235,68 @@ export function NativeBlockScreen({
               ) : null}
 
               {authorized && Platform.OS === "android" && blocker ? (
-                <View style={styles.callout}>
-                  <Text style={styles.calloutTitle}>Android</Text>
+                <Panel style={styles.stack}>
+                  <Eyebrow>Android</Eyebrow>
                   <Text style={styles.calloutBody}>
-                    Grant Usage Access and Display over other apps, then we can
-                    block Instagram’s package.
+                    Android needs two permissions before RotBlocker can block
+                    Instagram. Grant both, then turn blocking on.
                   </Text>
-                  <Pressable
-                    style={styles.ghost}
+                  <Button
+                    label="Open usage access"
+                    tone="quiet"
                     onPress={() => blocker.openUsageStatsSettings()}
-                  >
-                    <Text style={styles.ghostText}>Open usage access</Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.ghost}
+                  />
+                  <Button
+                    label="Open overlay settings"
+                    tone="quiet"
                     onPress={() => blocker.openOverlaySettings()}
-                  >
-                    <Text style={styles.ghostText}>Open overlay settings</Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.primary}
+                  />
+                  <Button
+                    label="Block Instagram"
+                    tone="primary"
                     onPress={async () => {
                       blocker.setBlockedApps(["com.instagram.android"]);
                       blocker.startMonitoring();
                       setBlockActive(true);
                       await saveBlockActive(true);
                     }}
-                  >
-                    <Text style={styles.primaryText}>Block Instagram</Text>
-                  </Pressable>
-                </View>
+                  />
+                </Panel>
               ) : null}
 
               {blockActive ? (
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.danger,
-                    pressed && styles.pressed,
-                  ]}
+                <Button
+                  label="Turn blocking off"
+                  tone="danger"
                   onPress={clearBlocks}
-                  disabled={busy}
-                >
-                  <Text style={styles.dangerText}>Turn shields off</Text>
-                </Pressable>
+                  busy={busy}
+                />
               ) : null}
-            </>
+            </Reveal>
           )}
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.secondaryCta,
-              pressed && styles.pressed,
-            ]}
-            onPress={onOpenFilteredInstagram}
-          >
-            <Text style={styles.secondaryCtaText}>
-              Open filtered Instagram
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.linkish}
-            onPress={() => Linking.openURL("shortcuts://")}
-          >
-            <Text style={styles.linkishText}>
-              Optional: open Shortcuts for a manual redirect
-            </Text>
-          </Pressable>
+          <Reveal delay={110} style={styles.stack}>
+            <NavRow
+              icon="eye-outline"
+              label="Open Instagram here"
+              hint="Reels hidden"
+              onPress={onOpenFilteredInstagram}
+            />
+            <Pressable
+              style={styles.linkish}
+              onPress={() => Linking.openURL("shortcuts://")}
+              accessibilityRole="link"
+            >
+              <Text style={styles.linkishText}>
+                Open Shortcuts (optional)
+              </Text>
+            </Pressable>
+          </Reveal>
 
           <Text style={styles.footer}>
-            Privacy note: iOS only gives RotBlocker opaque tokens for apps you
-            pick — we never see Instagram’s private data. Notifications can
-            still arrive from the native app while it’s shielded.
+            Your phone only tells RotBlocker which apps you picked, never
+            what’s in them. Notifications still arrive while Instagram is
+            blocked.
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -314,173 +306,92 @@ export function NativeBlockScreen({
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingLeft: 28,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.rule,
-  },
-  backBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    borderRadius: 4,
-    backgroundColor: colors.white,
-  },
-  backText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 13,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontFamily: fonts.display,
-    color: colors.ink,
-    fontSize: 18,
-  },
-  headerSpacer: { width: 64 },
   container: {
-    paddingHorizontal: 24,
-    paddingLeft: 36,
+    paddingRight: 24,
+    paddingLeft: GUTTER,
     paddingTop: 18,
-    paddingBottom: 48,
-    gap: 14,
+    paddingBottom: 52,
+    gap: 16,
   },
+  stack: { gap: 12 },
   lead: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 15,
     lineHeight: 22,
   },
-  callout: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.rule,
-    borderRadius: 4,
-    padding: 16,
-    gap: 10,
-  },
-  calloutTitle: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 16,
-  },
   calloutBody: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 14,
     lineHeight: 20,
   },
-  codeHint: {
-    fontFamily: fonts.bodyMed,
-    color: colors.seal,
+  code: {
+    backgroundColor: colors.well,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 2,
+  },
+  codeText: {
+    fontFamily: fonts.mono,
+    color: colors.mint,
     fontSize: 12,
     lineHeight: 18,
   },
+  statusPanel: { padding: 0, gap: 0 },
   statusRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.rule,
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 15,
+  },
+  statusDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.line,
   },
   statusLabel: {
+    flex: 1,
     fontFamily: fonts.bodyMed,
-    color: colors.ink,
-    fontSize: 14,
+    color: colors.text,
+    fontSize: 15,
   },
   statusValue: {
-    fontFamily: fonts.bodySemi,
-    fontSize: 13,
-  },
-  ok: { color: colors.seal },
-  warn: { color: colors.stamp },
-  section: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
+    fontFamily: fonts.bodyMed,
     fontSize: 14,
-    marginBottom: 8,
   },
-  pickerWrap: { gap: 8 },
+  ok: { color: colors.mint },
+  warn: { color: colors.splice },
+  pickerWrap: { gap: 6 },
+  pickerHint: {
+    fontFamily: fonts.body,
+    color: colors.textFaint,
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 6,
+  },
   picker: {
     height: 420,
-    borderRadius: 4,
+    borderRadius: radius.md,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: colors.rule,
-    backgroundColor: colors.white,
+    borderColor: colors.line,
+    backgroundColor: colors.panel,
   },
-  primary: {
-    backgroundColor: colors.seal,
-    borderRadius: 4,
-    paddingVertical: 15,
-    alignItems: "center",
-  },
-  primaryText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.white,
-    fontSize: 15,
-  },
-  ghost: {
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    borderRadius: 4,
-    paddingVertical: 12,
-    alignItems: "center",
-    backgroundColor: colors.white,
-  },
-  ghostText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 14,
-  },
-  danger: {
-    borderWidth: 1.5,
-    borderColor: colors.stamp,
-    borderRadius: 4,
-    paddingVertical: 14,
-    alignItems: "center",
-    backgroundColor: colors.stampWash,
-  },
-  dangerText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.stamp,
-    fontSize: 15,
-  },
-  secondaryCta: {
-    marginTop: 8,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    borderRadius: 4,
-    paddingVertical: 15,
-    alignItems: "center",
-    backgroundColor: colors.white,
-  },
-  secondaryCtaText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 15,
-  },
-  linkish: { paddingVertical: 8, alignItems: "center" },
+  linkish: { paddingVertical: 10, alignItems: "center" },
   linkishText: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 13,
     textDecorationLine: "underline",
   },
   footer: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 12,
-    lineHeight: 17,
-    textAlign: "center",
-    marginTop: 4,
+    color: colors.textFaint,
+    fontSize: 13,
+    lineHeight: 20,
   },
-  pressed: { opacity: 0.85 },
 });

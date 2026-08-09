@@ -1,64 +1,40 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  View,
-} from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { StruckReels } from "../components/StruckReels";
 import { SpliceBackground } from "../components/SpliceBackground";
+import {
+  Button,
+  Eyebrow,
+  IconBadge,
+  NavRow,
+  Panel,
+  Reveal,
+  type IconName,
+} from "../components/Kit";
 import {
   DEFAULT_INSTAGRAM_FILTERS,
   type InstagramFilterOptions,
 } from "../filters/instagram";
 import { loadInstagramFilters, saveInstagramFilters } from "../lib/settings";
-import { colors, fonts } from "../theme";
+import { colors, fonts, GUTTER } from "../theme";
 
 type ToggleKey = keyof InstagramFilterOptions;
 
-const TOGGLES: { key: ToggleKey; label: string; hint: string }[] = [
-  {
-    key: "hideReelsTab",
-    label: "Hide Reels tab",
-    hint: "Cut the Reels icon from the nav",
-  },
-  {
-    key: "hideReelsInFeed",
-    label: "Hide Reels in feed",
-    hint: "Strip Reel posts from home and explore",
-  },
-  {
-    key: "blockReelsNavigation",
-    label: "Block /reels URLs",
-    hint: "Bounce away if a Reels page opens",
-  },
-  {
-    key: "hideExplore",
-    label: "Hide Explore",
-    hint: "Optional — remove Explore too",
-  },
+const TOGGLES: { key: ToggleKey; label: string; icon: IconName }[] = [
+  { key: "hideReelsTab", label: "Reels tab", icon: "albums-outline" },
+  { key: "hideReelsInFeed", label: "Reels in your feed", icon: "film-outline" },
+  { key: "blockReelsNavigation", label: "Links to Reels", icon: "link-outline" },
+  { key: "hideExplore", label: "Explore tab", icon: "compass-outline" },
 ];
 
-const PILLARS = [
-  {
-    n: "01",
-    title: "Keep Instagram",
-    body: "Leave the native app installed so DM and story pushes still arrive.",
-  },
-  {
-    n: "02",
-    title: "Shield the native app",
-    body: "Use Block native apps to shield Instagram with Screen Time — no Shortcuts required.",
-  },
-  {
-    n: "03",
-    title: "Browse in RotBlocker",
-    body: "Open Instagram here. Filters cut Reels; DMs, stories, and feed stay.",
-  },
-] as const;
+/** Three steps, as a strip of icons rather than three paragraphs. */
+const STEPS: { icon: IconName; label: string }[] = [
+  { icon: "phone-portrait-outline", label: "Keep the app" },
+  { icon: "shield-checkmark-outline", label: "Block it" },
+  { icon: "eye-outline", label: "Browse here" },
+];
 
 type Props = {
   onOpenInstagram: () => void;
@@ -93,6 +69,11 @@ export function HomeScreen({
     });
   }, []);
 
+  const hiddenCount = useMemo(
+    () => TOGGLES.filter((item) => filters[item.key]).length,
+    [filters]
+  );
+
   return (
     <SpliceBackground>
       <SafeAreaView style={styles.safe}>
@@ -100,85 +81,102 @@ export function HomeScreen({
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.brand}>RotBlocker</Text>
-          <View style={styles.thesisRow}>
-            <Text style={styles.thesisLead}>Instagram with </Text>
-            <StruckReels size="sm" />
-            <Text style={styles.thesisLead}> cut out.</Text>
-          </View>
-          <Text style={styles.tagline}>
-            Keep the app for notifications. Do your scrolling here.
-          </Text>
-
-          <View style={styles.rule} />
-
-          {PILLARS.map((pillar) => (
-            <View key={pillar.n} style={styles.pillar}>
-              <Text style={styles.pillarN}>{pillar.n}</Text>
-              <View style={styles.pillarCopy}>
-                <Text style={styles.pillarTitle}>{pillar.title}</Text>
-                <Text style={styles.pillarBody}>{pillar.body}</Text>
-              </View>
+          <Reveal>
+            <Text style={styles.brand}>RotBlocker</Text>
+            <View style={styles.thesisRow}>
+              <Text style={styles.thesisLead}>Instagram without </Text>
+              <StruckReels size="sm" style={styles.inlineMark} />
             </View>
-          ))}
+          </Reveal>
 
-          <Pressable
-            style={({ pressed }) => [styles.blockCta, pressed && styles.pressed]}
-            onPress={onOpenNativeBlock}
-          >
-            <Text style={styles.blockCtaText}>Block native apps</Text>
-            <Text style={styles.blockCtaHint}>
-              Shield Instagram with Screen Time
-            </Text>
-          </Pressable>
-
-          <View style={styles.actionsRow}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.ghostBtn,
-                pressed && styles.pressed,
-              ]}
-              onPress={onOpenTutorial}
-            >
-              <Text style={styles.ghostBtnText}>Tutorial</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [
-                styles.ghostBtn,
-                pressed && styles.pressed,
-              ]}
-              onPress={onOpenSetup}
-            >
-              <Text style={styles.ghostBtnText}>Setup guide</Text>
-            </Pressable>
-          </View>
-
-          <Text style={styles.section}>Filters</Text>
-          {TOGGLES.map((item) => (
-            <View key={item.key} style={styles.row}>
-              <View style={styles.rowText}>
-                <Text style={styles.rowLabel}>{item.label}</Text>
-                <Text style={styles.rowHint}>{item.hint}</Text>
-              </View>
-              <Switch
-                disabled={!ready}
-                value={filters[item.key]}
-                onValueChange={(value) => update(item.key, value)}
-                trackColor={{ false: colors.mist, true: colors.seal }}
-                thumbColor={colors.white}
+          <Reveal delay={70}>
+            <Button
+              label="Open Instagram"
+              tone="primary"
+              onPress={onOpenInstagram}
+              style={styles.heroCta}
+            />
+            <View style={styles.ctaMetaRow}>
+              <Ionicons
+                name="checkmark-circle"
+                size={14}
+                color={colors.mint}
               />
+              <Text style={styles.ctaMeta}>
+                {ready
+                  ? `${hiddenCount} of ${TOGGLES.length} things hidden`
+                  : "Loading your settings"}
+              </Text>
             </View>
-          ))}
+          </Reveal>
 
-          <Pressable
-            style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
-            onPress={onOpenInstagram}
-          >
-            <Text style={styles.ctaText}>Open Instagram</Text>
-          </Pressable>
+          <Reveal delay={120} style={styles.block}>
+            <View style={styles.steps}>
+              {STEPS.map((step, i) => (
+                <View key={step.label} style={styles.step}>
+                  <IconBadge name={step.icon} size="sm" />
+                  <Text style={styles.stepLabel}>{step.label}</Text>
+                  {i < STEPS.length - 1 ? (
+                    <View style={styles.stepLink} />
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          </Reveal>
+
+          <Reveal delay={170} style={styles.block}>
+            <NavRow
+              icon="shield-checkmark-outline"
+              label="Block the Instagram app"
+              hint="Stops it opening on your phone"
+              onPress={onOpenNativeBlock}
+            />
+          </Reveal>
+
+          <Reveal delay={220} style={styles.block}>
+            <Eyebrow>Hidden in your feed</Eyebrow>
+            <Panel style={styles.filterPanel}>
+              {TOGGLES.map((item, i) => (
+                <View
+                  key={item.key}
+                  style={[styles.row, i > 0 && styles.rowDivided]}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={19}
+                    color={filters[item.key] ? colors.mint : colors.textFaint}
+                  />
+                  <Text style={styles.rowLabel}>{item.label}</Text>
+                  <Switch
+                    disabled={!ready}
+                    value={filters[item.key]}
+                    onValueChange={(value) => update(item.key, value)}
+                    trackColor={{ false: colors.lineStrong, true: colors.mint }}
+                    thumbColor={filters[item.key] ? colors.base : colors.text}
+                    ios_backgroundColor={colors.lineStrong}
+                  />
+                </View>
+              ))}
+            </Panel>
+          </Reveal>
+
+          <Reveal delay={260} style={styles.block}>
+            <NavRow
+              icon="help-circle-outline"
+              label="How it works"
+              tone="neutral"
+              onPress={onOpenTutorial}
+            />
+            <NavRow
+              icon="settings-outline"
+              label="Setup guide"
+              tone="neutral"
+              onPress={onOpenSetup}
+            />
+          </Reveal>
 
           <Text style={styles.footer}>
-            On-device filters. No accounts. No tracking. MIT.
+            Everything runs on your device. No account, no tracking.
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -189,157 +187,95 @@ export function HomeScreen({
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   container: {
-    paddingHorizontal: 28,
-    paddingTop: 12,
-    paddingBottom: 48,
-    paddingLeft: 36,
+    paddingRight: 26,
+    paddingLeft: GUTTER,
+    paddingTop: 14,
+    paddingBottom: 52,
   },
   brand: {
-    fontFamily: fonts.displayExtra,
-    color: colors.ink,
-    fontSize: 40,
-    letterSpacing: -1,
-    lineHeight: 44,
+    fontFamily: fonts.display,
+    color: colors.text,
+    fontSize: 34,
+    letterSpacing: -0.5,
+    lineHeight: 40,
   },
   thesisRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    marginTop: 10,
-    gap: 4,
+    marginTop: 6,
   },
+  /** Drops the mark onto the baseline of the sentence it sits in. */
+  inlineMark: { transform: [{ translateY: 2 }] },
   thesisLead: {
-    fontFamily: fonts.bodyMed,
-    color: colors.inkSoft,
+    fontFamily: fonts.body,
+    color: colors.textMuted,
     fontSize: 17,
     lineHeight: 24,
   },
-  tagline: {
-    fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 8,
-    maxWidth: 320,
-  },
-  rule: {
-    height: 1,
-    backgroundColor: colors.rule,
-    marginVertical: 22,
-  },
-  pillar: {
+  heroCta: { marginTop: 22 },
+  ctaMetaRow: {
     flexDirection: "row",
-    gap: 14,
-    marginBottom: 16,
-  },
-  pillarN: {
-    fontFamily: fonts.display,
-    color: colors.seal,
-    fontSize: 15,
-    letterSpacing: 1,
-    width: 28,
-    marginTop: 2,
-  },
-  pillarCopy: { flex: 1, gap: 4 },
-  pillarTitle: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 16,
-  },
-  pillarBody: {
-    fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  blockCta: {
-    marginTop: 8,
-    backgroundColor: colors.ink,
-    borderRadius: 4,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 2,
-  },
-  blockCtaText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.white,
-    fontSize: 15,
-  },
-  blockCtaHint: {
-    fontFamily: fonts.body,
-    color: colors.linenDeep,
-    fontSize: 12,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 6,
-    marginBottom: 8,
-  },
-  ghostBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    borderRadius: 4,
-    paddingVertical: 13,
     alignItems: "center",
-    backgroundColor: colors.white,
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 10,
   },
-  ghostBtnText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 14,
+  ctaMeta: {
+    fontFamily: fonts.body,
+    color: colors.textMuted,
+    fontSize: 13,
   },
-  section: {
-    fontFamily: fonts.display,
-    color: colors.ink,
-    fontSize: 20,
-    letterSpacing: -0.3,
-    marginTop: 20,
-    marginBottom: 4,
+  block: { marginTop: 22, gap: 10 },
+  steps: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 4,
   },
+  step: {
+    flex: 1,
+    alignItems: "center",
+    gap: 8,
+  },
+  stepLabel: {
+    fontFamily: fonts.bodyMed,
+    color: colors.textMuted,
+    fontSize: 12,
+    textAlign: "center",
+  },
+  /** Hairline joining the step tiles, so they read as a sequence. */
+  stepLink: {
+    position: "absolute",
+    top: 16,
+    left: "68%",
+    right: "-32%",
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.line,
+  },
+  filterPanel: { padding: 0, gap: 0 },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.rule,
+    gap: 13,
+    paddingVertical: 14,
+    paddingHorizontal: 15,
   },
-  rowText: { flex: 1, gap: 3 },
+  rowDivided: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.line,
+  },
   rowLabel: {
+    flex: 1,
     fontFamily: fonts.bodyMed,
-    color: colors.ink,
+    color: colors.text,
     fontSize: 15,
   },
-  rowHint: {
-    fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  cta: {
-    marginTop: 28,
-    backgroundColor: colors.seal,
-    borderRadius: 4,
-    paddingVertical: 17,
-    alignItems: "center",
-  },
-  ctaText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.white,
-    fontSize: 16,
-    letterSpacing: 0.2,
-  },
-  pressed: { opacity: 0.85 },
   footer: {
-    marginTop: 20,
+    marginTop: 26,
     fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 12,
-    lineHeight: 17,
+    color: colors.textFaint,
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: "center",
-    opacity: 0.8,
   },
 });

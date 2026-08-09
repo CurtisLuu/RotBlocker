@@ -31,7 +31,15 @@ export function buildInstagramFilterScript(
 
   var STYLE_ID = 'rotblocker-instagram-style';
   function ensureStyle() {
-    var css = [];
+    // Ask the page for its dark treatment. Instagram's own CSS keys off
+    // prefers-color-scheme, which a page can't set for itself — but the
+    // WebView inherits that from the app (dark), so this mainly stops the
+    // white canvas flashing through before their stylesheet lands.
+    var css = [
+      ':root { color-scheme: dark; }',
+      // Hide the control that hands playback to the fullscreen OS player.
+      'video::-webkit-media-controls-fullscreen-button { display: none !important; }'
+    ];
     if (opts.hideReelsTab) {
       css.push(
         'a[href="/reels/"], a[href^="/reels?"], a[href*="/reels/"] { display: none !important; }',
@@ -78,6 +86,31 @@ export function buildInstagramFilterScript(
     }
   }
 
+  /**
+   * Keep video in the page instead of handing it to the OS player.
+   *
+   * Two halves are needed. The WebView has to allow inline playback at all
+   * (see InstagramScreen), and every <video> has to carry playsinline before
+   * it starts — set it after playback begins and iOS has already taken over.
+   * New videos stream in constantly as you scroll, so this reruns on mutation.
+   */
+  function keepVideoInline() {
+    var videos = document.getElementsByTagName('video');
+    for (var v = 0; v < videos.length; v++) {
+      var video = videos[v];
+      if (video.__rotblockerInline) continue;
+      video.__rotblockerInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.setAttribute('disablePictureInPicture', '');
+      // Belt and braces: neuter the calls that would escalate to fullscreen.
+      video.webkitEnterFullscreen = function() {};
+      video.webkitEnterFullScreen = function() {};
+      video.requestFullscreen = function() { return Promise.resolve(); };
+      video.webkitRequestFullscreen = function() {};
+    }
+  }
+
   function blockReelsNav() {
     if (!opts.blockReelsNavigation) return;
     if (location.pathname.indexOf('/reels') === 0 || location.pathname.indexOf('/reel/') === 0) {
@@ -88,6 +121,7 @@ export function buildInstagramFilterScript(
 
   function apply() {
     ensureStyle();
+    keepVideoInline();
     hideReelArticles();
     blockReelsNav();
   }

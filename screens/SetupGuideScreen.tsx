@@ -1,15 +1,17 @@
-import {
-  Linking,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { SpliceBackground } from "../components/SpliceBackground";
+import {
+  IconBadge,
+  NavRow,
+  Panel,
+  Reveal,
+  ScreenHeader,
+  type IconName,
+} from "../components/Kit";
 import { isNativeBlockingAvailable } from "../lib/nativeBlock";
-import { colors, fonts } from "../theme";
+import { colors, fonts, GUTTER } from "../theme";
 
 type Props = {
   onBack: () => void;
@@ -18,61 +20,37 @@ type Props = {
 
 type GuideBlock = {
   step: string;
+  icon: IconName;
   title: string;
   body: string;
-  actions?: { label: string; detail: string }[];
+  points?: string[];
   note?: string;
 };
 
 const BLOCKS: GuideBlock[] = [
   {
-    step: "01",
+    step: "1",
+    icon: "notifications-outline",
     title: "Keep Instagram installed",
-    body: "Don’t delete it. You need the native app for DM and story pushes. RotBlocker can’t receive Meta’s notifications.",
-    actions: [
-      { label: "Do", detail: "Leave Instagram on your phone for alerts only." },
-      {
-        label: "Don’t",
-        detail: "Don’t open it to scroll — that’s RotBlocker’s job.",
-      },
-    ],
+    body: "You need the Instagram app to receive message and story notifications. RotBlocker can't receive them for you.",
   },
   {
-    step: "02",
-    title: "Block native Instagram in-app",
-    body: "RotBlocker can shield Instagram with Apple Screen Time. When you open Instagram, iOS shows our shield — tap through to filtered Instagram here. This replaces the old Shortcuts redirect.",
-    actions: [
-      {
-        label: "Open",
-        detail: "Home → Block native apps.",
-      },
-      {
-        label: "Allow",
-        detail: "Grant Screen Time access when iOS asks.",
-      },
-      {
-        label: "Pick",
-        detail: "Select Instagram in the system picker. Shields apply immediately.",
-      },
+    step: "2",
+    icon: "shield-checkmark-outline",
+    title: "Block the Instagram app",
+    body: "Screen Time stops Instagram from opening. When you try, you'll see RotBlocker's screen instead.",
+    points: [
+      "Open Block the Instagram app from the home screen",
+      "Allow Screen Time access when your phone asks",
+      "Choose Instagram from the list",
     ],
-    note: "Requires a development or production build — not Expo Go. Set your Apple Team ID in app.json first.",
+    note: "This needs a development or production build, not Expo Go. Add your Apple Team ID first.",
   },
   {
-    step: "03",
-    title: "About Shortcuts",
-    body: "Apple does not let apps create Shortcuts automations for you. Native shielding is the automatic path. Shortcuts remain an optional manual backup.",
-    actions: [
-      {
-        label: "Optional",
-        detail:
-          "Automation → App → Instagram Is Opened → Open App → RotBlocker.",
-      },
-    ],
-  },
-  {
-    step: "04",
-    title: "Browse in RotBlocker",
-    body: "Open Instagram from RotBlocker’s home screen. Filters cut Reels while DMs and stories stay usable.",
+    step: "3",
+    icon: "phone-portrait-outline",
+    title: "Browse from RotBlocker",
+    body: "Open Instagram from the home screen. Reels are hidden, and messages, stories, and your feed work as usual.",
   },
 ];
 
@@ -82,69 +60,67 @@ export function SetupGuideScreen({ onBack, onOpenNativeBlock }: Props) {
   return (
     <SpliceBackground>
       <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
-          <Pressable
-            onPress={onBack}
-            style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
-          >
-            <Text style={styles.backText}>Home</Text>
-          </Pressable>
-          <Text style={styles.headerTitle}>Setup</Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader title="Setup guide" onBack={onBack} />
 
         <ScrollView
           contentContainerStyle={styles.container}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.lead}>
-            Goal: pings from Instagram, scrolling only in RotBlocker.
-          </Text>
-
-          <Pressable
-            style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}
-            onPress={onOpenNativeBlock}
-          >
-            <Text style={styles.linkBtnText}>
-              {nativeReady
-                ? "Open Block native apps"
-                : "Block native apps (needs real build)"}
+          <Reveal>
+            <Text style={styles.lead}>
+              Three steps: keep the app for notifications, block it from
+              opening, and browse here instead.
             </Text>
-          </Pressable>
+            <NavRow
+              icon="shield-checkmark-outline"
+              label="Block the Instagram app"
+              hint={nativeReady ? undefined : "Needs a full build to work"}
+              onPress={onOpenNativeBlock}
+            />
+          </Reveal>
 
-          {BLOCKS.map((block) => (
-            <View key={block.step} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.stepText}>{block.step}</Text>
-                <Text style={styles.cardTitle}>{block.title}</Text>
-              </View>
-              <Text style={styles.cardBody}>{block.body}</Text>
-              {block.actions?.map((action) => (
-                <View key={action.label + action.detail} style={styles.actionRow}>
-                  <Text style={styles.actionLabel}>{action.label}</Text>
-                  <Text style={styles.actionDetail}>{action.detail}</Text>
+          {BLOCKS.map((block, i) => (
+            <Reveal key={block.step} delay={60 + i * 45}>
+              <Panel>
+                <View style={styles.cardHeader}>
+                  <IconBadge name={block.icon} />
+                  <View style={styles.cardHeadText}>
+                    <Text style={styles.stepText}>Step {block.step}</Text>
+                    <Text style={styles.cardTitle}>{block.title}</Text>
+                  </View>
                 </View>
-              ))}
-              {block.note ? <Text style={styles.note}>{block.note}</Text> : null}
-            </View>
+                <Text style={styles.cardBody}>{block.body}</Text>
+                {block.points?.length ? (
+                  <View style={styles.points}>
+                    {block.points.map((point) => (
+                      <View key={point} style={styles.pointRow}>
+                        <Ionicons
+                          name="ellipse"
+                          size={5}
+                          color={colors.mint}
+                          style={styles.bullet}
+                        />
+                        <Text style={styles.pointText}>{point}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+                {block.note ? (
+                  <Text style={styles.note}>{block.note}</Text>
+                ) : null}
+              </Panel>
+            </Reveal>
           ))}
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.linkBtnSecondary,
-              pressed && styles.pressed,
-            ]}
-            onPress={() => Linking.openURL("shortcuts://")}
-          >
-            <Text style={styles.linkBtnSecondaryText}>
-              Open Shortcuts (optional)
-            </Text>
-          </Pressable>
-
-          <Text style={styles.footer}>
-            After shielding: open Instagram through RotBlocker. Native stays for
-            notifications.
-          </Text>
+          <Reveal delay={220}>
+            <NavRow
+              icon="open-outline"
+              label="Open Shortcuts"
+              hint="Optional. Not needed if blocking works."
+              tone="neutral"
+              onPress={() => Linking.openURL("shortcuts://")}
+            />
+          </Reveal>
         </ScrollView>
       </SafeAreaView>
     </SpliceBackground>
@@ -153,133 +129,63 @@ export function SetupGuideScreen({ onBack, onOpenNativeBlock }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingLeft: 28,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.rule,
-  },
-  backBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    borderRadius: 4,
-    backgroundColor: colors.white,
-  },
-  backText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 13,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontFamily: fonts.display,
-    color: colors.ink,
-    fontSize: 18,
-  },
-  headerSpacer: { width: 64 },
   container: {
-    paddingHorizontal: 24,
-    paddingLeft: 36,
+    paddingRight: 24,
+    paddingLeft: GUTTER,
     paddingTop: 18,
-    paddingBottom: 48,
+    paddingBottom: 52,
     gap: 14,
   },
   lead: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 16,
     lineHeight: 24,
-    marginBottom: 4,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 4,
-    padding: 16,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: colors.rule,
+    marginBottom: 16,
   },
   cardHeader: {
     flexDirection: "row",
-    alignItems: "baseline",
-    gap: 12,
+    alignItems: "center",
+    gap: 13,
   },
+  cardHeadText: { flex: 1, gap: 1 },
   stepText: {
-    fontFamily: fonts.display,
-    color: colors.seal,
-    fontSize: 14,
+    fontFamily: fonts.monoMed,
+    color: colors.mint,
+    fontSize: 11,
     letterSpacing: 1,
+    textTransform: "uppercase",
   },
   cardTitle: {
-    flex: 1,
     fontFamily: fonts.bodySemi,
-    color: colors.ink,
+    color: colors.text,
     fontSize: 16,
   },
   cardBody: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 14,
     lineHeight: 21,
   },
-  actionRow: { gap: 2, paddingTop: 2 },
-  actionLabel: {
-    fontFamily: fonts.bodySemi,
-    color: colors.stamp,
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
+  points: { gap: 8, marginTop: 2 },
+  pointRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  actionDetail: {
+  bullet: { marginTop: 7 },
+  pointText: {
+    flex: 1,
     fontFamily: fonts.body,
-    color: colors.ink,
+    color: colors.text,
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
   },
   note: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 12,
-    lineHeight: 17,
+    color: colors.textFaint,
+    fontSize: 13,
+    lineHeight: 19,
     marginTop: 2,
-  },
-  linkBtn: {
-    backgroundColor: colors.seal,
-    borderRadius: 4,
-    paddingVertical: 15,
-    alignItems: "center",
-  },
-  linkBtnText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.white,
-    fontSize: 15,
-  },
-  linkBtnSecondary: {
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    borderRadius: 4,
-    paddingVertical: 15,
-    alignItems: "center",
-    backgroundColor: colors.white,
-  },
-  linkBtnSecondaryText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 15,
-  },
-  pressed: { opacity: 0.85 },
-  footer: {
-    fontFamily: fonts.body,
-    color: colors.inkSoft,
-    fontSize: 12,
-    lineHeight: 17,
-    textAlign: "center",
-    marginTop: 8,
   },
 });

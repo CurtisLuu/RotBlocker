@@ -4,14 +4,17 @@ import { StatusBar } from "expo-status-bar";
 import * as Linking from "expo-linking";
 import { useFonts } from "expo-font";
 import {
-  Syne_700Bold,
-  Syne_800ExtraBold,
-} from "@expo-google-fonts/syne";
-import {
   IBMPlexSans_400Regular,
   IBMPlexSans_500Medium,
   IBMPlexSans_600SemiBold,
+  IBMPlexSans_700Bold,
 } from "@expo-google-fonts/ibm-plex-sans";
+import {
+  IBMPlexMono_400Regular,
+  IBMPlexMono_500Medium,
+  IBMPlexMono_600SemiBold,
+} from "@expo-google-fonts/ibm-plex-mono";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { HomeScreen } from "./screens/HomeScreen";
 import { InstagramScreen } from "./screens/InstagramScreen";
@@ -51,11 +54,15 @@ function pathFromUrl(url: string | null): string | null {
 export default function App() {
   const [screen, setScreen] = useState<Screen>("loading");
   const [fontsLoaded] = useFonts({
-    Syne_700Bold,
-    Syne_800ExtraBold,
     IBMPlexSans_400Regular,
     IBMPlexSans_500Medium,
     IBMPlexSans_600SemiBold,
+    IBMPlexSans_700Bold,
+    IBMPlexMono_400Regular,
+    IBMPlexMono_500Medium,
+    IBMPlexMono_600SemiBold,
+    // Preloaded with the rest, so icons don't pop in a frame late.
+    ...Ionicons.font,
   });
 
   useEffect(() => {
@@ -102,10 +109,10 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       {booting ? (
         <View style={styles.loading}>
-          <ActivityIndicator color={colors.seal} />
+          <ActivityIndicator color={colors.mint} />
         </View>
       ) : null}
       {!booting && screen === "tutorial" ? (
@@ -141,7 +148,7 @@ export default function App() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: colors.linen,
+    backgroundColor: colors.base,
     alignItems: "center",
     justifyContent: "center",
   },

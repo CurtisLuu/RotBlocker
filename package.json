@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --go",
     "start:native": "ENABLE_NATIVE_BLOCK=1 expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -11,8 +11,9 @@
     "build:dev:ios": "ENABLE_NATIVE_BLOCK=1 eas build --profile development --platform ios"
   },
   "dependencies": {
+    "@expo-google-fonts/ibm-plex-mono": "^0.4.1",
     "@expo-google-fonts/ibm-plex-sans": "^0.4.1",
-    "@expo-google-fonts/syne": "^0.4.2",
+    "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "babel-preset-expo": "~54.0.10",
     "expo": "~54.0.0",

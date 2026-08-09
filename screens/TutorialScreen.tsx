@@ -1,105 +1,90 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { StruckReels } from "../components/StruckReels";
 import { SpliceBackground } from "../components/SpliceBackground";
-import { colors, fonts } from "../theme";
+import { Button, IconBadge, type IconName } from "../components/Kit";
+import { colors, fonts, GUTTER } from "../theme";
 
 type Props = {
   onFinished: () => void;
 };
 
 type Step = {
-  eyebrow: string;
+  icon: IconName;
   title: string;
   body: string;
   points?: string[];
-  showStamp?: boolean;
+  showMark?: boolean;
 };
 
 const STEPS: Step[] = [
   {
-    eyebrow: "Welcome",
-    title: "Cut the rot. Keep the people.",
-    body: "RotBlocker is free and open source. Use Instagram for messages and friends — without losing an hour to the short-form feed.",
-    showStamp: true,
-    points: [
-      "Filters stay on your phone",
-      "No account, no tracking",
-      "MIT licensed forever",
-    ],
+    icon: "eye-off-outline",
+    title: "Instagram without Reels",
+    body: "RotBlocker hides Reels and leaves the rest of Instagram working normally.",
+    showMark: true,
+    points: ["Free and open source", "Nothing leaves your phone"],
   },
   {
-    eyebrow: "The deal",
-    title: "Notifications from Instagram. Scrolling here.",
-    body: "Delete Instagram and DM pushes die with it. Keep the app for alerts — just don’t browse there.",
-    points: [
-      "Native Instagram = notification inbox",
-      "RotBlocker = where you open Instagram",
-      "Reels get cut before they hook you",
-    ],
+    icon: "notifications-outline",
+    title: "Keep the Instagram app",
+    body: "If you delete it, you stop getting message and story notifications. Leave it installed and browse here instead.",
   },
   {
-    eyebrow: "Inside the app",
-    title: "A filtered Instagram session",
-    body: "Open Instagram loads the mobile site here. RotBlocker hides Reels (and optionally Explore) while DMs and stories stay usable.",
-    points: [
-      "Not Meta’s native UI — a filtered web session",
-      "Home-screen toggles control the cut",
-      "When Instagram redesigns, we update the filters",
-    ],
+    icon: "shield-checkmark-outline",
+    title: "Stop the app from opening",
+    body: "RotBlocker can use Screen Time to block Instagram, so opening it brings you back here.",
+    points: ["Set it up under Block the Instagram app"],
   },
   {
-    eyebrow: "Limit the habit",
-    title: "Block native opens. Keep the pings.",
-    body: "In a real iOS build, Block native apps shields Instagram with Screen Time. Apple won’t let apps create Shortcuts for you — shielding replaces that redirect.",
-    points: [
-      "Home → Block native apps",
-      "Pick Instagram in Apple’s picker",
-      "Shield opens → jump back to RotBlocker",
-    ],
-  },
-  {
-    eyebrow: "Ready",
-    title: "Open Instagram on purpose.",
-    body: "Use RotBlocker when you mean to. Leave native Instagram quiet except for notifications. That’s the whole product.",
+    icon: "checkmark-circle-outline",
+    title: "You're ready",
+    body: "Open Instagram from RotBlocker whenever you want to browse.",
   },
 ];
 
 export function TutorialScreen({ onFinished }: Props) {
   const [index, setIndex] = useState(0);
   const fade = useRef(new Animated.Value(1)).current;
+  const slide = useRef(new Animated.Value(0)).current;
   const step = STEPS[index];
   const isLast = index === STEPS.length - 1;
 
   const progress = useMemo(() => STEPS.map((_, i) => i <= index), [index]);
 
+  /** Fade the current step out, drop the next one in from the side. */
   const goTo = (next: number) => {
-    Animated.sequence([
+    const direction = next > index ? 1 : -1;
+    Animated.parallel([
       Animated.timing(fade, {
         toValue: 0,
-        duration: 120,
+        duration: 110,
         useNativeDriver: true,
       }),
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: 180,
+      Animated.timing(slide, {
+        toValue: -8 * direction,
+        duration: 110,
         useNativeDriver: true,
       }),
-    ]).start();
-    // Swap content mid-fade
-    setTimeout(() => setIndex(next), 120);
+    ]).start(() => {
+      setIndex(next);
+      slide.setValue(10 * direction);
+      Animated.parallel([
+        Animated.timing(fade, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slide, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
   };
-
-  useEffect(() => {
-    fade.setValue(1);
-  }, [fade]);
 
   return (
     <SpliceBackground>
@@ -108,58 +93,68 @@ export function TutorialScreen({ onFinished }: Props) {
           <View style={styles.dots}>
             {progress.map((done, i) => (
               <View
-                key={STEPS[i].eyebrow}
-                style={[styles.dot, done && styles.dotActive]}
+                key={STEPS[i].title}
+                style={[
+                  styles.dot,
+                  done && styles.dotDone,
+                  i === index && styles.dotActive,
+                ]}
               />
             ))}
           </View>
-          <Pressable onPress={onFinished} hitSlop={12}>
+          <Pressable onPress={onFinished} hitSlop={12} accessibilityRole="button">
             <Text style={styles.skip}>Skip</Text>
           </Pressable>
         </View>
 
-        <Animated.View style={[styles.bodyWrap, { opacity: fade }]}>
-          <Text style={styles.eyebrow}>{step.eyebrow}</Text>
-          {step.showStamp ? (
-            <View style={styles.stampBlock}>
-              <StruckReels size="lg" />
-            </View>
-          ) : null}
+        <Animated.View
+          style={[
+            styles.bodyWrap,
+            { opacity: fade, transform: [{ translateX: slide }] },
+          ]}
+        >
+          {/* The mark is the icon on the step that shows it — never both. */}
+          {step.showMark ? (
+            <StruckReels size="lg" />
+          ) : (
+            <IconBadge name={step.icon} size="lg" />
+          )}
           <Text style={styles.title}>{step.title}</Text>
           <Text style={styles.body}>{step.body}</Text>
-          {step.points?.map((point) => (
-            <View key={point} style={styles.pointRow}>
-              <View style={styles.bullet} />
-              <Text style={styles.point}>{point}</Text>
+          {step.points?.length ? (
+            <View style={styles.points}>
+              {step.points.map((point) => (
+                <View key={point} style={styles.pointRow}>
+                  <Ionicons
+                    name="checkmark"
+                    size={16}
+                    color={colors.mint}
+                    style={styles.check}
+                  />
+                  <Text style={styles.point}>{point}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+          ) : null}
         </Animated.View>
 
         <View style={styles.footer}>
           {index > 0 ? (
-            <Pressable
+            <Button
+              label="Back"
+              tone="quiet"
               onPress={() => goTo(index - 1)}
-              style={({ pressed }) => [
-                styles.secondary,
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={styles.secondaryText}>Back</Text>
-            </Pressable>
+              style={styles.secondary}
+            />
           ) : (
-            <View style={styles.secondaryPlaceholder} />
+            <View style={styles.secondary} />
           )}
-          <Pressable
-            style={({ pressed }) => [styles.primary, pressed && styles.pressed]}
-            onPress={() => {
-              if (isLast) onFinished();
-              else goTo(index + 1);
-            }}
-          >
-            <Text style={styles.primaryText}>
-              {isLast ? "Get started" : "Next"}
-            </Text>
-          </Pressable>
+          <Button
+            label={isLast ? "Get started" : "Next"}
+            tone="primary"
+            onPress={() => (isLast ? onFinished() : goTo(index + 1))}
+            style={styles.primary}
+          />
         </View>
       </SafeAreaView>
     </SpliceBackground>
@@ -169,109 +164,73 @@ export function TutorialScreen({ onFinished }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    paddingHorizontal: 28,
-    paddingLeft: 36,
+    paddingRight: 26,
+    paddingLeft: GUTTER,
   },
   top: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 8,
+    paddingTop: 10,
     paddingBottom: 16,
   },
-  dots: { flexDirection: "row", gap: 6 },
+  dots: { flexDirection: "row", gap: 6, alignItems: "center" },
   dot: {
     width: 8,
-    height: 8,
+    height: 3,
     borderRadius: 1,
-    backgroundColor: colors.mist,
+    backgroundColor: colors.lineStrong,
   },
+  dotDone: { backgroundColor: colors.textFaint },
   dotActive: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.mint,
     width: 22,
   },
   skip: {
     fontFamily: fonts.bodyMed,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 14,
   },
   bodyWrap: {
     flex: 1,
     justifyContent: "center",
-    gap: 12,
-    paddingBottom: 20,
+    gap: 14,
+    paddingBottom: 16,
   },
-  eyebrow: {
-    fontFamily: fonts.bodySemi,
-    color: colors.seal,
-    fontSize: 12,
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
-  },
-  stampBlock: { marginVertical: 4 },
   title: {
-    fontFamily: fonts.displayExtra,
-    color: colors.ink,
-    fontSize: 34,
-    letterSpacing: -0.8,
-    lineHeight: 38,
+    fontFamily: fonts.display,
+    color: colors.text,
+    fontSize: 29,
+    letterSpacing: -0.4,
+    lineHeight: 36,
+    marginTop: 2,
   },
   body: {
     fontFamily: fonts.body,
-    color: colors.inkSoft,
+    color: colors.textMuted,
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 25,
+    maxWidth: 330,
   },
+  points: { gap: 10, marginTop: 6 },
   pointRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 10,
-    marginTop: 2,
   },
-  bullet: {
-    width: 6,
-    height: 6,
-    marginTop: 8,
-    backgroundColor: colors.stamp,
-  },
+  check: { marginTop: 3 },
   point: {
     flex: 1,
     fontFamily: fonts.bodyMed,
-    color: colors.ink,
+    color: colors.text,
     fontSize: 15,
     lineHeight: 22,
   },
   footer: {
     flexDirection: "row",
     gap: 12,
-    paddingBottom: 16,
+    paddingBottom: 18,
   },
-  secondary: {
-    flex: 1,
-    borderRadius: 4,
-    paddingVertical: 16,
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-    backgroundColor: colors.white,
-  },
-  secondaryPlaceholder: { flex: 1 },
-  secondaryText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.ink,
-    fontSize: 15,
-  },
-  primary: {
-    flex: 1.4,
-    borderRadius: 4,
-    paddingVertical: 16,
-    alignItems: "center",
-    backgroundColor: colors.seal,
-  },
-  primaryText: {
-    fontFamily: fonts.bodySemi,
-    color: colors.white,
-    fontSize: 15,
-  },
-  pressed: { opacity: 0.85 },
+  secondary: { flex: 1 },
+  primary: { flex: 1.4 },
 });
