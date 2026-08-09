@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.expo/
+dist/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+
+# Local env
+.env
+.env.local
+
+# TypeScript
+*.tsbuildinfo
+expo-env.d.ts
