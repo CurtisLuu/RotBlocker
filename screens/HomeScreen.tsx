@@ -23,6 +23,17 @@ import type { InstagramFilterOptions } from "../filters/instagram";
 import type { YouTubeFilterOptions } from "../filters/youtube";
 import { colors, fonts, GUTTER } from "../theme";
 
+type ToggleKey = keyof InstagramFilterOptions;
+
+const TOGGLES: { key: ToggleKey; label: string; icon: IconName }[] = [
+  { key: "hideReelsTab", label: "Reels tab", icon: "albums-outline" },
+  { key: "hideReelsInFeed", label: "Reels in your feed", icon: "film-outline" },
+  { key: "blockReelsNavigation", label: "Links to Reels", icon: "link-outline" },
+  { key: "hideExplore", label: "Explore tab", icon: "compass-outline" },
+  { key: "hidePosts", label: "Posts in your feed", icon: "images-outline" },
+  { key: "hideStories", label: "Stories", icon: "aperture-outline" },
+];
+
 /** Three steps, as a strip of icons rather than three paragraphs. */
 const STEPS: { icon: IconName; label: string }[] = [
   { icon: "phone-portrait-outline", label: "Keep the app" },
