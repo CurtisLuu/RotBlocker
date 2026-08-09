@@ -9,13 +9,22 @@ export type InstagramFilterOptions = {
   hideReelsInFeed: boolean;
   hideExplore: boolean;
   blockReelsNavigation: boolean;
+  hidePosts: boolean;
+  hideStories: boolean;
 };
 
+/**
+ * Reels are off by default; posts and stories are not. The app's promise is
+ * that the feed, stories and DMs keep working — so anything that takes those
+ * away has to be something the user switches on themselves.
+ */
 export const DEFAULT_INSTAGRAM_FILTERS: InstagramFilterOptions = {
   hideReelsTab: true,
   hideReelsInFeed: true,
   hideExplore: false,
   blockReelsNavigation: true,
+  hidePosts: false,
+  hideStories: false,
 };
 
 /** Builds injected JS that runs at document start and on DOM mutations. */
@@ -59,6 +68,25 @@ export function buildInstagramFilterScript(
         'article a[href*="/reel/"] { display: none !important; }'
       );
     }
+    if (opts.hidePosts) {
+      css.push(
+        // A feed post is an <article>. The home marker (see markHomeFeed)
+        // keeps this off permalinks, profiles and DMs, which use the same
+        // element — hiding it there would blank a page the user asked for.
+        'html[data-rotblocker-home] main article { display: none !important; }'
+      );
+    }
+    if (opts.hideStories) {
+      css.push(
+        // The stories carousel above the first post is a row of links to
+        // /stories/<username>/. Hiding the links empties it; collapseStoryRail
+        // then removes the strip they leave behind. Same home-only scoping,
+        // so opening a story from a DM or a profile still works.
+        'html[data-rotblocker-home] main a[href^="/stories/"] { display: none !important; }',
+        // The tray's own "add to story" entry, which is a button, not a link.
+        'html[data-rotblocker-home] main [aria-label="Add to story"] { display: none !important; }'
+      );
+    }
     var el = document.getElementById(STYLE_ID);
     if (!el) {
       el = document.createElement('style');
@@ -84,6 +112,61 @@ export function buildInstagramFilterScript(
       var article2 = reelLinks[j].closest('article');
       if (article2) article2.style.setProperty('display', 'none', 'important');
     }
+  }
+
+  /**
+   * Flags the document while the home feed is the page on screen.
+   *
+   * Posts and stories are only hidden at home — the same markup carries a
+   * permalink, a profile grid and a DM thread, all of which the user opened
+   * deliberately. A stylesheet can't read the URL, so the path test lives
+   * here and the post/story rules key off the attribute it sets.
+   */
+  function markHomeFeed() {
+    var path = location.pathname;
+    var home = path === '/' || path === '';
+    var root = document.documentElement;
+    if (home) root.setAttribute('data-rotblocker-home', '');
+    else root.removeAttribute('data-rotblocker-home');
+  }
+
+  var RAIL_FLAG = 'data-rotblocker-rail';
+
+  /**
+   * Collapses the empty strip the hidden stories carousel leaves behind.
+   *
+   * The CSS hides the story links, but their horizontal scroller keeps its
+   * height. Walk up from a story link to the outermost ancestor that still
+   * looks like just the carousel — more than one story link in it, no
+   * <article> anywhere inside — and hide that instead of guessing at a class
+   * name. The feed can be empty while it loads, so a wrapper can look like a
+   * rail and later fill with posts; every pass re-checks what it hid and
+   * puts it back if an article turned up inside.
+   */
+  function collapseStoryRail() {
+    var flagged = document.querySelectorAll('[' + RAIL_FLAG + ']');
+    for (var f = 0; f < flagged.length; f++) {
+      if (!opts.hideStories || flagged[f].querySelector('article')) {
+        flagged[f].style.removeProperty('display');
+        flagged[f].removeAttribute(RAIL_FLAG);
+      }
+    }
+    if (!opts.hideStories) return;
+    if (!document.documentElement.hasAttribute('data-rotblocker-home')) return;
+    var link = document.querySelector('main a[href^="/stories/"]');
+    if (!link) return;
+    var node = link.parentElement;
+    var rail = null;
+    // Ten levels clears the carousel's wrappers well before <main>.
+    for (var i = 0; i < 10 && node; i++) {
+      if (node === document.body || node.tagName === 'MAIN') break;
+      if (node.querySelector('article')) break;
+      if (node.querySelectorAll('a[href^="/stories/"]').length > 1) rail = node;
+      node = node.parentElement;
+    }
+    if (!rail) return;
+    rail.setAttribute(RAIL_FLAG, '');
+    rail.style.setProperty('display', 'none', 'important');
   }
 
   /**
@@ -120,9 +203,13 @@ export function buildInstagramFilterScript(
   }
 
   function apply() {
+    // The marker gates the post and story rules, so it goes on before the
+    // stylesheet is written.
+    markHomeFeed();
     ensureStyle();
     keepVideoInline();
     hideReelArticles();
+    collapseStoryRail();
     blockReelsNav();
   }
 

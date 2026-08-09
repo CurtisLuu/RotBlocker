@@ -27,6 +27,8 @@ const TOGGLES: { key: ToggleKey; label: string; icon: IconName }[] = [
   { key: "hideReelsInFeed", label: "Reels in your feed", icon: "film-outline" },
   { key: "blockReelsNavigation", label: "Links to Reels", icon: "link-outline" },
   { key: "hideExplore", label: "Explore tab", icon: "compass-outline" },
+  { key: "hidePosts", label: "Posts in your feed", icon: "images-outline" },
+  { key: "hideStories", label: "Stories", icon: "aperture-outline" },
 ];
 
 /** Three steps, as a strip of icons rather than three paragraphs. */
