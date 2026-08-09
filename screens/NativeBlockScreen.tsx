@@ -30,12 +30,26 @@ import {
   saveBlockActive,
   saveNativeSelection,
 } from "../lib/settings";
+import type { SiteKey } from "../lib/sites";
 import { colors, fonts, GUTTER, radius } from "../theme";
 
 type Props = {
   onBack: () => void;
-  onOpenFilteredInstagram: () => void;
+  onOpenSite: (site: SiteKey) => void;
 };
+
+/**
+ * Android has no picker, so the list is fixed. Instagram and YouTube are
+ * blocked because RotBlocker can show you a filtered version of both; TikTok
+ * is blocked because there is nothing worth showing.
+ */
+const ANDROID_BLOCKED_APPS = [
+  "com.instagram.android",
+  // TikTok ships under two ids depending on the region it was installed from.
+  "com.zhiliaoapp.musically",
+  "com.ss.android.ugc.trill",
+  "com.google.android.youtube",
+];
 
 /** Plain-language status, with the icon carrying the on/off state. */
 function StatusRow({ label, value, ok }: { label: string; value: string; ok: boolean }) {
@@ -54,10 +68,7 @@ function StatusRow({ label, value, ok }: { label: string; value: string; ok: boo
   );
 }
 
-export function NativeBlockScreen({
-  onBack,
-  onOpenFilteredInstagram,
-}: Props) {
+export function NativeBlockScreen({ onBack, onOpenSite }: Props) {
   const available = isNativeBlockingAvailable();
   const blocker = available ? getNativeBlockModule() : null;
 
@@ -97,7 +108,7 @@ export function NativeBlockScreen({
       if (!result.allGranted) {
         Alert.alert(
           "Screen Time access needed",
-          "RotBlocker needs Screen Time permission to shield native Instagram."
+          "RotBlocker needs Screen Time permission to block apps on this phone."
         );
       }
     } catch (e) {
@@ -136,7 +147,7 @@ export function NativeBlockScreen({
   return (
     <SpliceBackground>
       <SafeAreaView style={styles.safe}>
-        <ScreenHeader title="Block Instagram" onBack={onBack} />
+        <ScreenHeader title="Block apps" onBack={onBack} />
 
         <ScrollView
           contentContainerStyle={styles.container}
@@ -144,8 +155,11 @@ export function NativeBlockScreen({
         >
           <Reveal>
             <Text style={styles.lead}>
-              Use Screen Time to stop Instagram from opening. When you try to
-              open it, you’ll see RotBlocker’s screen instead.
+              Use Screen Time to stop an app from opening. When you try to open
+              it, you’ll see RotBlocker’s screen instead. Instagram and YouTube
+              are still there to browse here, filtered. TikTok isn’t — it’s
+              short video the whole way through, so blocking is all RotBlocker
+              does with it.
             </Text>
           </Reveal>
 
@@ -200,7 +214,8 @@ export function NativeBlockScreen({
                 <View style={styles.pickerWrap}>
                   <Eyebrow>Choose what to block</Eyebrow>
                   <Text style={styles.pickerHint}>
-                    Select Instagram. Blocking starts as soon as you choose.
+                    Pick any app in the list — Instagram, TikTok, YouTube, or
+                    anything else. Blocking starts as soon as you choose.
                   </Text>
                   <Picker
                     initialSelection={selectionData || undefined}
@@ -238,8 +253,9 @@ export function NativeBlockScreen({
                 <Panel style={styles.stack}>
                   <Eyebrow>Android</Eyebrow>
                   <Text style={styles.calloutBody}>
-                    Android needs two permissions before RotBlocker can block
-                    Instagram. Grant both, then turn blocking on.
+                    Android has no app picker, so RotBlocker blocks a fixed
+                    list: Instagram, TikTok and YouTube. Grant both permissions
+                    below, then turn blocking on.
                   </Text>
                   <Button
                     label="Open usage access"
@@ -252,10 +268,10 @@ export function NativeBlockScreen({
                     onPress={() => blocker.openOverlaySettings()}
                   />
                   <Button
-                    label="Block Instagram"
+                    label="Block Instagram, TikTok and YouTube"
                     tone="primary"
                     onPress={async () => {
-                      blocker.setBlockedApps(["com.instagram.android"]);
+                      blocker.setBlockedApps(ANDROID_BLOCKED_APPS);
                       blocker.startMonitoring();
                       setBlockActive(true);
                       await saveBlockActive(true);
@@ -277,10 +293,16 @@ export function NativeBlockScreen({
 
           <Reveal delay={110} style={styles.stack}>
             <NavRow
-              icon="eye-outline"
+              icon="logo-instagram"
               label="Open Instagram here"
               hint="Reels hidden"
-              onPress={onOpenFilteredInstagram}
+              onPress={() => onOpenSite("instagram")}
+            />
+            <NavRow
+              icon="logo-youtube"
+              label="Open YouTube here"
+              hint="Shorts hidden"
+              onPress={() => onOpenSite("youtube")}
             />
             <Pressable
               style={styles.linkish}
@@ -295,8 +317,7 @@ export function NativeBlockScreen({
 
           <Text style={styles.footer}>
             Your phone only tells RotBlocker which apps you picked, never
-            what’s in them. Notifications still arrive while Instagram is
-            blocked.
+            what’s in them. Notifications still arrive while an app is blocked.
           </Text>
         </ScrollView>
       </SafeAreaView>

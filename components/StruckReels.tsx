@@ -16,9 +16,15 @@ import { colors, fonts } from "../theme";
  */
 export function StruckReels({
   size = "md",
+  word = "REELS",
   style,
 }: {
   size?: "sm" | "md" | "lg";
+  /**
+   * The word under the cut. Reels is the original; the same mark carries
+   * SHORTS on the YouTube line, because it's the same cut.
+   */
+  word?: string;
   /** For optical alignment when the mark sits inline in a run of text. */
   style?: StyleProp<ViewStyle>;
 }) {
@@ -28,12 +34,12 @@ export function StruckReels({
   const cutTop = fontSize * 0.52 - cutHeight / 2;
 
   return (
-    <View style={[styles.wrap, style]} accessibilityLabel="Reels, crossed out">
+    <View style={[styles.wrap, style]} accessibilityLabel={`${word}, crossed out`}>
       <Text
         style={[styles.word, { fontSize, lineHeight: fontSize * 1.05 }]}
         allowFontScaling={false}
       >
-        REELS
+        {word}
       </Text>
       <View
         style={[styles.cut, { top: cutTop, height: cutHeight }]}

@@ -28,20 +28,30 @@ const STEPS: Step[] = [
     points: ["Free and open source", "Nothing leaves your phone"],
   },
   {
+    icon: "logo-youtube",
+    title: "YouTube without Shorts",
+    body: "Same idea on YouTube: the Shorts tab, shelves and search results go, and normal videos, subscriptions and search stay.",
+  },
+  {
+    icon: "logo-tiktok",
+    title: "TikTok gets blocked",
+    body: "TikTok is short video the whole way through, so there's nothing to filter. RotBlocker blocks it rather than opening it.",
+  },
+  {
     icon: "notifications-outline",
-    title: "Keep the Instagram app",
-    body: "If you delete it, you stop getting message and story notifications. Leave it installed and browse here instead.",
+    title: "Keep the apps installed",
+    body: "If you delete them, you stop getting message and story notifications. Leave them installed and browse here instead.",
   },
   {
     icon: "shield-checkmark-outline",
-    title: "Stop the app from opening",
-    body: "RotBlocker can use Screen Time to block Instagram, so opening it brings you back here.",
-    points: ["Set it up under Block the Instagram app"],
+    title: "Stop the apps from opening",
+    body: "RotBlocker can use Screen Time to block them, so opening one brings you back here.",
+    points: ["Set it up under Block apps on your phone"],
   },
   {
     icon: "checkmark-circle-outline",
     title: "You're ready",
-    body: "Open Instagram from RotBlocker whenever you want to browse.",
+    body: "Open Instagram or YouTube from RotBlocker whenever you want to browse.",
   },
 ];
 

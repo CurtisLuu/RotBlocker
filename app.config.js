@@ -27,7 +27,7 @@ if (enableNativeBlock) {
         },
         notification: {
           title: "RotBlocker",
-          body: "Open RotBlocker for filtered Instagram — Reels cut out.",
+          body: "Open RotBlocker to browse with Reels and Shorts cut out.",
         },
       },
     },

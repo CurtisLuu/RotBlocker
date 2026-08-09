@@ -37,12 +37,12 @@ const BLOCKS: GuideBlock[] = [
   {
     step: "2",
     icon: "shield-checkmark-outline",
-    title: "Block the Instagram app",
-    body: "Screen Time stops Instagram from opening. When you try, you'll see RotBlocker's screen instead.",
+    title: "Block the apps",
+    body: "Screen Time stops an app from opening. When you try, you'll see RotBlocker's screen instead.",
     points: [
-      "Open Block the Instagram app from the home screen",
+      "Open Block apps on your phone from the home screen",
       "Allow Screen Time access when your phone asks",
-      "Choose Instagram from the list",
+      "Choose Instagram, TikTok and YouTube from the list",
     ],
     note: "This needs a development or production build, not Expo Go. Add your Apple Team ID first.",
   },
@@ -50,7 +50,13 @@ const BLOCKS: GuideBlock[] = [
     step: "3",
     icon: "phone-portrait-outline",
     title: "Browse from RotBlocker",
-    body: "Open Instagram from the home screen. Reels are hidden, and messages, stories, and your feed work as usual.",
+    body: "Open Instagram or YouTube from the home screen. Reels and Shorts are hidden; messages, stories, your feed and normal videos work as usual.",
+  },
+  {
+    step: "4",
+    icon: "logo-tiktok",
+    title: "TikTok stays blocked",
+    body: "There's no filtered TikTok to open. Short video is all it is, so RotBlocker blocks it and stops there.",
   },
 ];
 
@@ -68,12 +74,12 @@ export function SetupGuideScreen({ onBack, onOpenNativeBlock }: Props) {
         >
           <Reveal>
             <Text style={styles.lead}>
-              Three steps: keep the app for notifications, block it from
-              opening, and browse here instead.
+              Keep the apps for notifications, block them from opening, and
+              browse here instead.
             </Text>
             <NavRow
               icon="shield-checkmark-outline"
-              label="Block the Instagram app"
+              label="Block apps on your phone"
               hint={nativeReady ? undefined : "Needs a full build to work"}
               onPress={onOpenNativeBlock}
             />
