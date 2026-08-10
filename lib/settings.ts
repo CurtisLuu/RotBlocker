@@ -8,11 +8,11 @@ import {
   type YouTubeFilterOptions,
 } from "../filters/youtube";
 
-const INSTAGRAM_FILTERS_KEY = "rotblocker.instagram.filters";
-const YOUTUBE_FILTERS_KEY = "rotblocker.youtube.filters";
-const TUTORIAL_KEY = "rotblocker.tutorial.completed";
-const SELECTION_KEY = "rotblocker.native.selection";
-const BLOCK_ACTIVE_KEY = "rotblocker.native.blockActive";
+const INSTAGRAM_FILTERS_KEY = "pleasefocus.instagram.filters";
+const YOUTUBE_FILTERS_KEY = "pleasefocus.youtube.filters";
+const TUTORIAL_KEY = "pleasefocus.tutorial.completed";
+const SELECTION_KEY = "pleasefocus.native.selection";
+const BLOCK_ACTIVE_KEY = "pleasefocus.native.blockActive";
 
 /**
  * Filters are stored per site, and read back merged over the defaults: a

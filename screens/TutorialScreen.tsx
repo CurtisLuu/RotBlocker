@@ -23,7 +23,7 @@ const STEPS: Step[] = [
   {
     icon: "eye-off-outline",
     title: "Instagram without Reels",
-    body: "RotBlocker hides Reels and leaves the rest of Instagram working normally.",
+    body: "Please Focus! hides Reels and leaves the rest of Instagram working normally.",
     showMark: true,
     points: ["Free and open source", "Nothing leaves your phone"],
   },
@@ -35,7 +35,7 @@ const STEPS: Step[] = [
   {
     icon: "logo-tiktok",
     title: "TikTok gets blocked",
-    body: "TikTok is short video the whole way through, so there's nothing to filter. RotBlocker blocks it rather than opening it.",
+    body: "TikTok is short video the whole way through, so there's nothing to filter. Please Focus! blocks it rather than opening it.",
   },
   {
     icon: "notifications-outline",
@@ -45,13 +45,13 @@ const STEPS: Step[] = [
   {
     icon: "shield-checkmark-outline",
     title: "Stop the apps from opening",
-    body: "RotBlocker can use Screen Time to block them, so opening one brings you back here.",
+    body: "Please Focus! can use Screen Time to block them, so opening one brings you back here.",
     points: ["Set it up under Block apps on your phone"],
   },
   {
     icon: "checkmark-circle-outline",
     title: "You're ready",
-    body: "Open Instagram or YouTube from RotBlocker whenever you want to browse.",
+    body: "Open Instagram or YouTube from Please Focus! whenever you want to browse.",
   },
 ];
 

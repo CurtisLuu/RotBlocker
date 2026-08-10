@@ -11,12 +11,12 @@ if (enableNativeBlock) {
     "expo-app-blocker",
     {
       ios: {
-        appGroup: "group.org.rotblocker.blocker",
+        appGroup: "group.org.PleaseFocus.blocker",
         shield: {
           title: "Reels stay cut.",
           subtitle:
-            "{appName} is shielded. Open RotBlocker for a filtered session.",
-          primaryButtonLabel: "Open RotBlocker",
+            "{appName} is shielded. Open Please Focus! for a filtered session.",
+          primaryButtonLabel: "Open Please Focus!",
           secondaryButtonLabel: "Not now",
           // Matches theme.ts — mint = go, off-white on film-leader black.
           primaryButtonColor: "#4BE0A5",
@@ -26,8 +26,8 @@ if (enableNativeBlock) {
           backgroundBlurStyle: "systemThickMaterialDark",
         },
         notification: {
-          title: "RotBlocker",
-          body: "Open RotBlocker to browse with Reels and Shorts cut out.",
+          title: "Please Focus!",
+          body: "Open Please Focus! to browse with Reels and Shorts cut out.",
         },
       },
     },
@@ -36,12 +36,12 @@ if (enableNativeBlock) {
 
 /** @type {import('expo/config').ExpoConfig} */
 const config = {
-  name: "RotBlocker",
-  slug: "rotblocker",
+  name: "Please Focus!",
+  slug: "PleaseFocus",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
-  scheme: "rotblocker",
+  scheme: "pleasefocus",
   // The bench is dark-only — let system chrome (alerts, pickers) follow.
   userInterfaceStyle: "dark",
   newArchEnabled: true,
@@ -52,14 +52,14 @@ const config = {
   },
   ios: {
     supportsTablet: false,
-    bundleIdentifier: "org.rotblocker.app",
+    bundleIdentifier: "org.PleaseFocus.app",
     ...(enableNativeBlock
       ? {
           appleTeamId: process.env.APPLE_TEAM_ID || "YOUR_APPLE_TEAM_ID",
           entitlements: {
             "com.apple.developer.family-controls": true,
             "com.apple.security.application-groups": [
-              "group.org.rotblocker.blocker",
+              "group.org.PleaseFocus.blocker",
             ],
           },
         }
@@ -67,7 +67,7 @@ const config = {
     infoPlist: {
       CFBundleURLTypes: [
         {
-          CFBundleURLSchemes: ["rotblocker"],
+          CFBundleURLSchemes: ["pleasefocus"],
         },
       ],
     },
@@ -77,12 +77,12 @@ const config = {
       foregroundImage: "./assets/adaptive-icon.png",
       backgroundColor: "#070907",
     },
-    package: "org.rotblocker.app",
+    package: "org.PleaseFocus.app",
     intentFilters: [
       {
         action: "VIEW",
         category: ["BROWSABLE", "DEFAULT"],
-        data: [{ scheme: "rotblocker" }],
+        data: [{ scheme: "pleasefocus" }],
       },
     ],
   },
@@ -101,31 +101,31 @@ const config = {
                   {
                     targetName: "DeviceActivityMonitor",
                     bundleIdentifier:
-                      "org.rotblocker.app.DeviceActivityMonitor",
+                      "org.PleaseFocus.app.DeviceActivityMonitor",
                     entitlements: {
                       "com.apple.developer.family-controls": true,
                       "com.apple.security.application-groups": [
-                        "group.org.rotblocker.blocker",
+                        "group.org.PleaseFocus.blocker",
                       ],
                     },
                   },
                   {
                     targetName: "ShieldAction",
-                    bundleIdentifier: "org.rotblocker.app.ShieldAction",
+                    bundleIdentifier: "org.PleaseFocus.app.ShieldAction",
                     entitlements: {
                       "com.apple.developer.family-controls": true,
                       "com.apple.security.application-groups": [
-                        "group.org.rotblocker.blocker",
+                        "group.org.PleaseFocus.blocker",
                       ],
                     },
                   },
                   {
                     targetName: "ShieldConfiguration",
-                    bundleIdentifier: "org.rotblocker.app.ShieldConfiguration",
+                    bundleIdentifier: "org.PleaseFocus.app.ShieldConfiguration",
                     entitlements: {
                       "com.apple.developer.family-controls": true,
                       "com.apple.security.application-groups": [
-                        "group.org.rotblocker.blocker",
+                        "group.org.PleaseFocus.blocker",
                       ],
                     },
                   },

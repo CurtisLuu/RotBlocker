@@ -40,7 +40,7 @@ type Props = {
 
 /**
  * Android has no picker, so the list is fixed. Instagram and YouTube are
- * blocked because RotBlocker can show you a filtered version of both; TikTok
+ * blocked because Please Focus! can show you a filtered version of both; TikTok
  * is blocked because there is nothing worth showing.
  */
 const ANDROID_BLOCKED_APPS = [
@@ -108,7 +108,7 @@ export function NativeBlockScreen({ onBack, onOpenSite }: Props) {
       if (!result.allGranted) {
         Alert.alert(
           "Screen Time access needed",
-          "RotBlocker needs Screen Time permission to block apps on this phone."
+          "Please Focus! needs Screen Time permission to block apps on this phone."
         );
       }
     } catch (e) {
@@ -156,9 +156,9 @@ export function NativeBlockScreen({ onBack, onOpenSite }: Props) {
           <Reveal>
             <Text style={styles.lead}>
               Use Screen Time to stop an app from opening. When you try to open
-              it, you’ll see RotBlocker’s screen instead. Instagram and YouTube
+              it, you’ll see the Please Focus! screen instead. Instagram and YouTube
               are still there to browse here, filtered. TikTok isn’t — it’s
-              short video the whole way through, so blocking is all RotBlocker
+              short video the whole way through, so blocking is all Please Focus!
               does with it.
             </Text>
           </Reveal>
@@ -253,7 +253,7 @@ export function NativeBlockScreen({ onBack, onOpenSite }: Props) {
                 <Panel style={styles.stack}>
                   <Eyebrow>Android</Eyebrow>
                   <Text style={styles.calloutBody}>
-                    Android has no app picker, so RotBlocker blocks a fixed
+                    Android has no app picker, so Please Focus! blocks a fixed
                     list: Instagram, TikTok and YouTube. Grant both permissions
                     below, then turn blocking on.
                   </Text>
@@ -316,7 +316,7 @@ export function NativeBlockScreen({ onBack, onOpenSite }: Props) {
           </Reveal>
 
           <Text style={styles.footer}>
-            Your phone only tells RotBlocker which apps you picked, never
+            Your phone only tells Please Focus! which apps you picked, never
             what’s in them. Notifications still arrive while an app is blocked.
           </Text>
         </ScrollView>

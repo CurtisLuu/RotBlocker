@@ -146,7 +146,7 @@ export function HomeScreen({
           showsVerticalScrollIndicator={false}
         >
           <Reveal>
-            <Text style={styles.brand}>RotBlocker</Text>
+            <Text style={styles.brand}>Please Focus!</Text>
             <View style={styles.thesisRow}>
               <Text style={styles.thesisLead}>Instagram without </Text>
               <StruckReels size="sm" style={styles.inlineMark} />
@@ -236,7 +236,7 @@ export function HomeScreen({
             <Panel tone="notice">
               <Text style={styles.panelBody}>
                 TikTok is short video the whole way through, so there is no
-                filtered version of it to browse. RotBlocker blocks it instead.
+                filtered version of it to browse. Please Focus! blocks it instead.
               </Text>
             </Panel>
             <NavRow

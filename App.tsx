@@ -87,7 +87,7 @@ export default function App() {
     return () => sub.remove();
   }, []);
 
-  // When user taps "Open RotBlocker" on the iOS shield notification
+  // When user taps "Open Please Focus!" on the iOS shield notification
   useEffect(() => {
     const blocker = getNativeBlockModule();
     if (!blocker?.addPendingUnlockListener) return;
@@ -95,7 +95,7 @@ export default function App() {
     const sub = blocker.addPendingUnlockListener(() => {
       // The unlock event says nothing about which app was shielded, but the
       // intercept queue does. Open the filtered version of the app the user
-      // was actually reaching for; anything else (TikTok, an app RotBlocker
+      // was actually reaching for; anything else (TikTok, an app Please Focus!
       // doesn't browse) keeps the old Instagram destination.
       let target: Screen = "instagram";
       try {

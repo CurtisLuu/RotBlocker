@@ -135,8 +135,8 @@ export function buildYouTubeFilterScript(
   }
 
   return buildFilterScript({
-    installFlag: "__rotblockerYouTubeInstalled",
-    styleId: "rotblocker-youtube-style",
+    installFlag: "__pleasefocusYouTubeInstalled",
+    styleId: "pleasefocus-youtube-style",
     options: options as unknown as Record<string, boolean>,
     css,
     // The JS pass does what CSS can't: walk up from a Shorts link to the row,
@@ -144,8 +144,8 @@ export function buildYouTubeFilterScript(
     // `:has()`, so the toggles behave the same on an older WebView.
     extraApply: `function() {
       function hideNode(node) {
-        if (!node || node.__rotblockerHidden) return;
-        node.__rotblockerHidden = true;
+        if (!node || node.__pleasefocusHidden) return;
+        node.__pleasefocusHidden = true;
         node.style.setProperty('display', 'none', 'important');
       }
       var SHELF = ${JSON.stringify(SHELF_SELECTOR)};

@@ -4,7 +4,7 @@ import UIKit
 import UserNotifications
 
 class ShieldActionExtension: ShieldActionDelegate {
-  private let appGroupIdentifier = "group.org.rotblocker.blocker"
+  private let appGroupIdentifier = "group.org.PleaseFocus.blocker"
   private let pendingUnlockKey = "appBlocker.pendingUnlock.v1"
   private let pendingInterceptsKey = "appBlocker.pendingIntercepts.v1"
   private let lastInterceptTsKey = "appBlocker.lastInterceptTs.v1"
@@ -14,8 +14,8 @@ class ShieldActionExtension: ShieldActionDelegate {
   // Notification copy + behavior — configurable via plugin options so apps
   // can localize without forking. Defaults preserve the original English
   // copy and the icon attachment.
-  private let notificationTitle = "RotBlocker"
-  private let notificationBody = "Open RotBlocker to browse with Reels and Shorts cut out."
+  private let notificationTitle = "Please Focus!"
+  private let notificationBody = "Open Please Focus! to browse with Reels and Shorts cut out."
   private let notificationAttachIcon = true
 
   override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {

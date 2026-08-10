@@ -1,5 +1,5 @@
 /**
- * The sites RotBlocker will browse for you, and what it hides on each.
+ * The sites Please Focus! will browse for you, and what it hides on each.
  *
  * One entry per site, holding everything the rest of the app needs to know:
  * where to go, what to inject, what to persist, and which toggles to show.

@@ -1,5 +1,5 @@
 /**
- * RotBlocker visual system — "cutting room, lights down."
+ * Please Focus! visual system — "cutting room, lights down."
  *
  * The bench is the same splicing desk; the lights are off. A dark slate-green
  * field, panels lit from above, and exactly two signal colors: splice orange
@@ -58,7 +58,7 @@ export const colors = {
  *
  * Display duty is IBM Plex Sans Bold rather than a wide display face: at
  * headline sizes on a phone, character in the letterforms costs more legibility
- * than it buys, and wide faces break long words like "RotBlocker" across lines.
+ * than it buys, and wide faces break long words like "Please Focus!" across lines.
  * Plex keeps its personality (the humanist grotesque details) while staying
  * readable at 15px and at 40px.
  */

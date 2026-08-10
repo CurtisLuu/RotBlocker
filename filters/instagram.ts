@@ -78,7 +78,7 @@ export function buildInstagramFilterScript(
       // extraApply) keeps this off permalinks, profiles and DMs, which use
       // the same element — hiding it there would blank a page the user
       // deliberately opened.
-      'html[data-rotblocker-home] main article { display: none !important; }'
+      'html[data-pleasefocus-home] main article { display: none !important; }'
     );
   }
   if (options.hideStories) {
@@ -87,15 +87,15 @@ export function buildInstagramFilterScript(
       // /stories/<username>/. Hiding the links empties it; collapseStoryRail
       // removes the strip they leave behind. Same home-only scoping, so
       // opening a story from a DM or a profile still works.
-      'html[data-rotblocker-home] main a[href^="/stories/"] { display: none !important; }',
+      'html[data-pleasefocus-home] main a[href^="/stories/"] { display: none !important; }',
       // The tray's own "add to story" entry, which is a button, not a link.
-      'html[data-rotblocker-home] main [aria-label="Add to story"] { display: none !important; }'
+      'html[data-pleasefocus-home] main [aria-label="Add to story"] { display: none !important; }'
     );
   }
 
   return buildFilterScript({
-    installFlag: "__rotblockerInstalled",
-    styleId: "rotblocker-instagram-style",
+    installFlag: "__pleasefocusInstalled",
+    styleId: "pleasefocus-instagram-style",
     options: options as unknown as Record<string, boolean>,
     css,
     // Three passes that CSS alone can't do:
@@ -106,14 +106,14 @@ export function buildInstagramFilterScript(
     //  - story rail    : the emptied carousel keeps its height; collapse it.
     // Order matters only for the rail, which reads the home marker.
     extraApply: `function() {
-      var RAIL_FLAG = 'data-rotblocker-rail';
+      var RAIL_FLAG = 'data-pleasefocus-rail';
 
       // Posts and stories are hidden at home only. The same markup carries a
       // permalink, a profile grid and a DM thread, all opened deliberately.
       var path = location.pathname;
       var root = document.documentElement;
-      if (path === '/' || path === '') root.setAttribute('data-rotblocker-home', '');
-      else root.removeAttribute('data-rotblocker-home');
+      if (path === '/' || path === '') root.setAttribute('data-pleasefocus-home', '');
+      else root.removeAttribute('data-pleasefocus-home');
 
       if (opts.hideReelsInFeed) {
         var spans = document.querySelectorAll('span, div, a');
@@ -143,7 +143,7 @@ export function buildInstagramFilterScript(
         }
       }
       if (!opts.hideStories) return;
-      if (!root.hasAttribute('data-rotblocker-home')) return;
+      if (!root.hasAttribute('data-pleasefocus-home')) return;
 
       // Walk up from a story link to the outermost ancestor that still looks
       // like just the carousel: more than one story link, no <article> inside.

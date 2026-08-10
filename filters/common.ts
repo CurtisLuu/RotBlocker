@@ -1,7 +1,7 @@
 /**
  * Shared scaffolding for the per-site filter scripts.
  *
- * Every site RotBlocker filters needs the same four things, and only the
+ * Every site Please Focus! filters needs the same four things, and only the
  * selectors differ:
  *
  * 1. A stylesheet that hides the short-form surfaces, re-asserted after the
@@ -68,7 +68,7 @@ export function buildFilterScript(spec: FilterScriptSpec): string {
   var siteCss = ${JSON.stringify(spec.css)};
 
   var running = window.${flag};
-  if (running && running.rotblocker) {
+  if (running && running.pleasefocus) {
     running.update(opts, siteCss);
     return;
   }
@@ -113,8 +113,8 @@ export function buildFilterScript(spec: FilterScriptSpec): string {
     var videos = document.getElementsByTagName('video');
     for (var v = 0; v < videos.length; v++) {
       var video = videos[v];
-      if (video.__rotblockerInline) continue;
-      video.__rotblockerInline = true;
+      if (video.__pleasefocusInline) continue;
+      video.__pleasefocusInline = true;
       video.setAttribute('playsinline', '');
       video.setAttribute('webkit-playsinline', '');
       video.setAttribute('disablePictureInPicture', '');
@@ -180,7 +180,7 @@ export function buildFilterScript(spec: FilterScriptSpec): string {
   }, 500);
 
   window.${flag} = {
-    rotblocker: true,
+    pleasefocus: true,
     /** Re-injection path: same script, new toggles, no reload. */
     update: function(nextOpts, nextCss) {
       opts = nextOpts;
@@ -199,8 +199,8 @@ true;
  */
 export const HIDE_NODE_SOURCE = `
   function hideNode(node) {
-    if (!node || node.__rotblockerHidden) return;
-    node.__rotblockerHidden = true;
+    if (!node || node.__pleasefocusHidden) return;
+    node.__pleasefocusHidden = true;
     node.style.setProperty('display', 'none', 'important');
   }
 `;

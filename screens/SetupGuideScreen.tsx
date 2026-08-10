@@ -32,13 +32,13 @@ const BLOCKS: GuideBlock[] = [
     step: "1",
     icon: "notifications-outline",
     title: "Keep Instagram installed",
-    body: "You need the Instagram app to receive message and story notifications. RotBlocker can't receive them for you.",
+    body: "You need the Instagram app to receive message and story notifications. Please Focus! can't receive them for you.",
   },
   {
     step: "2",
     icon: "shield-checkmark-outline",
     title: "Block the apps",
-    body: "Screen Time stops an app from opening. When you try, you'll see RotBlocker's screen instead.",
+    body: "Screen Time stops an app from opening. When you try, you'll see the Please Focus! screen instead.",
     points: [
       "Open Block apps on your phone from the home screen",
       "Allow Screen Time access when your phone asks",
@@ -49,14 +49,14 @@ const BLOCKS: GuideBlock[] = [
   {
     step: "3",
     icon: "phone-portrait-outline",
-    title: "Browse from RotBlocker",
+    title: "Browse from Please Focus!",
     body: "Open Instagram or YouTube from the home screen. Reels and Shorts are hidden; messages, stories, your feed and normal videos work as usual.",
   },
   {
     step: "4",
     icon: "logo-tiktok",
     title: "TikTok stays blocked",
-    body: "There's no filtered TikTok to open. Short video is all it is, so RotBlocker blocks it and stops there.",
+    body: "There's no filtered TikTok to open. Short video is all it is, so Please Focus! blocks it and stops there.",
   },
 ];
 

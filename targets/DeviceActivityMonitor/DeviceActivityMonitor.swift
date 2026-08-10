@@ -10,7 +10,7 @@ import Foundation
 // match, iOS cannot instantiate the extension and NONE of the callbacks fire.
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
   // CONFIGURE: Replace with your App Group identifier
-  private let appGroupIdentifier = "group.org.rotblocker.blocker"
+  private let appGroupIdentifier = "group.org.PleaseFocus.blocker"
   // Granted earned-time budget in SECONDS (Int); kept in sync with
   // ExpoAppBlockerModule.swift. Presence with value > 0 means an unlock is active.
   private let temporaryUnlockKey = "appBlocker.temporaryUnlock.v1"

@@ -4,12 +4,12 @@ import UIKit
 
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
-  private let appGroupIdentifier = "group.org.rotblocker.blocker"
+  private let appGroupIdentifier = "group.org.PleaseFocus.blocker"
 
   // All values below are replaced by the config plugin at prebuild time
   private let shieldTitle = "Reels stay cut."
-  private let shieldSubtitle = "{appName} is shielded. Open RotBlocker for a filtered session."
-  private let shieldPrimaryButtonLabel = "Open RotBlocker"
+  private let shieldSubtitle = "{appName} is shielded. Open Please Focus! for a filtered session."
+  private let shieldPrimaryButtonLabel = "Open Please Focus!"
   private let shieldSecondaryButtonLabel = "Not now"
   // Temporary-unlock state copy — shown briefly while ManagedSettings clears
   // after a successful unlock. Configurable via plugin options.

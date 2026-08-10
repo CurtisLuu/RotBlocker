@@ -1,8 +1,8 @@
-# RotBlocker
+# Please Focus!
 
 Open-source, free. Instagram without Reels, YouTube without Shorts, TikTok blocked.
 
-RotBlocker loads a site’s mobile web in an in-app browser and hides the short-form surface while leaving the rest working:
+Please Focus! loads a site’s mobile web in an in-app browser and hides the short-form surface while leaving the rest working:
 
 - **Instagram** — hides Reels (and optionally Explore); feed, stories and DMs stay usable.
 - **YouTube** — hides the Shorts tab, the Shorts shelves, and Shorts in search; normal videos, subscriptions and search stay usable.
@@ -13,8 +13,8 @@ A **development / production build** can also shield the native apps with Apple 
 ## How it works
 
 1. Keep the **native apps** installed for DM/story notifications.
-2. **Block apps on your phone** in RotBlocker (Screen Time) — pick them once.
-3. Browse Instagram and YouTube inside **RotBlocker**, where the short-form surfaces are filtered. TikTok stays blocked.
+2. **Block apps on your phone** in Please Focus! (Screen Time) — pick them once.
+3. Browse Instagram and YouTube inside **Please Focus!**, where the short-form surfaces are filtered. TikTok stays blocked.
 
 Apple does **not** allow apps to create Shortcuts automations for you. Native shielding replaces that redirect. Shortcuts remain an optional manual backup.
 
@@ -42,11 +42,11 @@ Scan the QR with Expo Go. That tests filters, tutorial, setup UI, and home.
 Needs a real iOS build (not Expo Go):
 
 1. Set `APPLE_TEAM_ID` when building (see `app.config.js`).
-2. In Apple Developer: create App Group `group.org.rotblocker.blocker`, enable Family Controls + App Groups on:
-   - `org.rotblocker.app`
-   - `org.rotblocker.app.DeviceActivityMonitor`
-   - `org.rotblocker.app.ShieldAction`
-   - `org.rotblocker.app.ShieldConfiguration`
+2. In Apple Developer: create App Group `group.org.PleaseFocus.blocker`, enable Family Controls + App Groups on:
+   - `org.PleaseFocus.app`
+   - `org.PleaseFocus.app.DeviceActivityMonitor`
+   - `org.PleaseFocus.app.ShieldAction`
+   - `org.PleaseFocus.app.ShieldConfiguration`
 3. Request [Family Controls distribution](https://developer.apple.com/contact/request/family-controls-distribution) for App Store/TestFlight (dev builds can use Family Controls Development meanwhile).
 4. Build:
 
